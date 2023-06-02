@@ -29,14 +29,13 @@
   }
 
   async function playTrack(track: Track, event: MouseEvent) {
-    console.log("rerun");
-    const target = event.target as HTMLElement;
+    const targetHTML = event.target as HTMLElement;
+    const target =
+      targetHTML.children.length > 0 ? targetHTML : targetHTML.parentElement;
 
     clearInterval($player.interval);
 
-    if ($player.element) $player.element.classList.remove("text-red-500");
-
-    target.classList.add("text-red-500");
+    player.updateElement(target);
 
     let i = allTracks.findIndex((t) => t == track);
 
@@ -50,7 +49,7 @@
 
 <div class="flex flex-1">
   {#if cover !== ""}
-    <img src={convertFileSrc(cover)} class="h-28 w-30" />
+    <img src={convertFileSrc(cover)} class="h-28 w-30 transform-gpu" />
   {/if}
   <div class="flex flex-col ml-2">
     <h1 class="mt-2 text-3xl">{name}</h1>
@@ -59,14 +58,18 @@
     <div class="mt-2">
       {#each tracks as track}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <h1
-          class="hover:cursor-pointer"
+        <div
+          class="hover:cursor-pointer hover:text-gray-400 transition-all track"
           on:click={(event) => playTrack(track, event)}
-          id="track"
         >
-          {track.track}
-          {track.title}
-        </h1>
+          <span>
+            {track.track}.
+          </span>
+
+          <span class="ml-0.5">
+            {track.title}
+          </span>
+        </div>
       {/each}
     </div>
   </div>

@@ -1,9 +1,9 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-mod parse_music;
+mod parse;
 
-use parse_music::parse_folder;
+use parse::parse_folder;
 use serde::Serialize;
 use tauri::State;
 use tauri::{api::dialog, CustomMenuItem, Manager, Menu, Submenu};
@@ -77,10 +77,7 @@ async fn resume(playback_mutex: State<'_, Mutex<PlaybackState>>) -> Result<(), (
     Ok(())
 }
 
-#[tokio::main]
-async fn main() {
-    tauri::async_runtime::set(tokio::runtime::Handle::current());
-
+fn main() {
     let open_folder = CustomMenuItem::new("open_folder".to_string(), "Open Folder");
     let exit = CustomMenuItem::new("exit".to_string(), "Exit");
     let submenu = Submenu::new("File", Menu::new().add_item(open_folder).add_item(exit));

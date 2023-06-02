@@ -12,8 +12,8 @@
 
   const stop = () => {
     clearInterval($player.interval);
-    console.log($player.interval);
-    if ($player.element) $player.element.classList.remove("text-red-500");
+
+    if ($player.element) $player.element.classList.remove("text-cyan-400");
 
     invoke("stop");
 

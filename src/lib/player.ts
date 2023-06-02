@@ -4,6 +4,7 @@ export type PlayerType = {
   play(track: Track): Promise<void>;
   playPrevious(): Promise<void>;
   playNext(): Promise<void>;
+  updateElement(element: HTMLElement): Promise<void>;
   default(): Promise<void>;
   subscribe(subscriber: Subscriber): () => void;
   set(newPlayer: PlayerObj): void;
@@ -11,7 +12,7 @@ export type PlayerType = {
 };
 
 export type PlayerObj = {
-  track?: Track;
+  currentTrack?: Track;
   tracks: Track[];
   i: number;
   playing: boolean;
@@ -27,7 +28,7 @@ export function Player(): PlayerType {
   const subscribers: Set<Subscriber> = new Set();
 
   let player: PlayerObj = {
-    track: {
+    currentTrack: {
       track: "",
       album: {
         name: "goober",
@@ -48,13 +49,17 @@ export function Player(): PlayerType {
     elapsed: 0,
   };
 
-  let returns = {
+  let announce = () => {
+    subscribers.forEach((subscriber) => {
+      subscriber(player);
+    });
+  };
+
+  let methods = {
     async play(track: Track) {
       await invoke("play", {
         path: track.path,
       });
-
-      console.log(track);
 
       clearInterval(player.interval);
       player.elapsed = 0;
@@ -63,68 +68,96 @@ export function Player(): PlayerType {
         if (!player.playing) return;
 
         if (
-          player.elapsed === player.track.duration &&
-          player.track.duration !== 0
+          player.elapsed === player.currentTrack.duration &&
+          player.currentTrack.duration !== 0
         ) {
           clearInterval(player.interval);
 
-          await returns.playNext();
+          await methods.playNext();
         }
 
         player.elapsed++;
 
-        subscribers.forEach((subscriber) => {
-          subscriber(player);
-          console.log(player.elapsed);
-        });
+        announce();
       }, 1000);
 
-      player.track = track;
+      player.currentTrack = track;
       player.playing = true;
       player.paused = false;
 
-      if (player.element) player.element.classList.add("text-red-500");
+      if (player.element) player.element.classList.add("text-cyan-400");
 
-      subscribers.forEach((subscriber) => {
-        subscriber(player);
-        console.log(subscribers);
-      });
+      announce();
     },
 
     async playPrevious() {
       player.i--;
-      player.track = player.tracks[player.i];
+      player.currentTrack = player.tracks[player.i];
 
-      if (!player.track) {
+      player.element.classList.remove("text-cyan-400");
+
+      let elements = [
+        ...(document.getElementsByClassName(
+          "track"
+        ) as HTMLCollectionOf<HTMLElement>),
+      ];
+
+      let index = elements.findIndex((x) => x === player.element) - 1;
+      let previousElement = elements[index];
+
+      player.element = previousElement;
+
+      if (!player.currentTrack) {
         player.i = player.tracks.length - 1;
-        player.track = player.tracks[player.i];
+        player.currentTrack = player.tracks[player.i];
+
+        player.element = elements[player.i];
       }
 
-      returns.play(player.track);
+      methods.play(player.currentTrack);
 
-      subscribers.forEach((subscriber) => {
-        subscriber(player);
-      });
+      announce();
     },
 
     async playNext() {
       player.i++;
-      player.track = player.tracks[player.i];
+      player.currentTrack = player.tracks[player.i];
 
-      if (!player.track) {
+      player.element.classList.remove("text-cyan-400");
+
+      let elements = [
+        ...(document.getElementsByClassName(
+          "track"
+        ) as HTMLCollectionOf<HTMLElement>),
+      ];
+
+      let index = elements.findIndex((x) => x === player.element) + 1;
+      let nextElement = elements[index];
+
+      player.element = nextElement;
+
+      if (!player.currentTrack) {
         player.i = 0;
-        player.track = player.tracks[player.i];
+        player.currentTrack = player.tracks[player.i];
+
+        player.element = elements[player.i];
       }
 
-      returns.play(player.track);
+      methods.play(player.currentTrack);
 
-      subscribers.forEach((subscriber) => {
-        subscriber(player);
-      });
+      announce();
+    },
+    async updateElement(element: HTMLElement) {
+      if (player.element) player.element.classList.remove("text-cyan-400");
+
+      player.element = element;
+      player.element.classList.add("text-cyan-400");
+
+      announce();
     },
     async default() {
       player = {
-        track: {
+        currentTrack: {
           track: "",
           album: {
             name: "goober",
@@ -145,9 +178,7 @@ export function Player(): PlayerType {
         elapsed: 0,
       };
 
-      subscribers.forEach((subscriber) => {
-        subscriber(player);
-      });
+      announce();
     },
     subscribe(subscriber: Subscriber) {
       subscribers.add(subscriber);
@@ -159,18 +190,15 @@ export function Player(): PlayerType {
     },
     set(newPlayer: PlayerObj) {
       player = newPlayer;
-      subscribers.forEach((subscriber) => {
-        subscriber(player);
-      });
+
+      announce();
     },
     update(x: (player: PlayerObj) => void) {
       x(player);
 
-      subscribers.forEach((subscriber) => {
-        subscriber(player);
-      });
+      announce();
     },
   };
 
-  return returns;
+  return methods;
 }

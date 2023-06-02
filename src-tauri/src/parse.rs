@@ -53,9 +53,12 @@ fn extract_filename(file_path: &str) -> Option<&str> {
 pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
     let mut sorted_albums: BTreeMap<String, SortedAlbum> = BTreeMap::new();
 
+    println!("start");
+
     let path_resolver = app.path_resolver();
     let dir = path_resolver.app_data_dir().unwrap();
     fs::create_dir_all(&dir).unwrap();
+    println!("created dir");
 
     for entry in WalkDir::new(&p).into_iter().filter_map(Result::ok) {
         let file_name = entry.file_name().to_str().unwrap();
@@ -64,7 +67,7 @@ pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
             Ok(md) => md,
             Err(_) => continue,
         };
-
+        println!("metadata");
         // scan only files
         if !md.is_file() {
             continue;
@@ -74,7 +77,7 @@ pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
             Ok(tag) => tag,
             Err(_) => continue,
         };
-
+        println!("tag extracted");
         let name = extract_filename(file_name).unwrap_or(file_name);
 
         let title = tag.title().unwrap_or(name).to_string();
@@ -105,6 +108,8 @@ pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
                 },
                 tracks: BTreeMap::new(),
             });
+
+        println!("sorted");
 
         let disc_number = tag.disc_number().unwrap_or(1);
         let mut track_number = tag
@@ -149,6 +154,7 @@ pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
         };
 
         sorted_album.tracks.insert(track_key, track);
+        println!("inserted");
     }
 
     let payload_albums: Vec<Album> = sorted_albums

@@ -41,38 +41,50 @@
     for (let album of payload.albums) {
       allTracks.push(...album.tracks);
     }
-
-    console.log(allTracks);
   });
 
-  function formatTime(timeString: string): string {
-    const length = timeString.length;
+  type Time = {
+    h: number;
+    m: number;
+    s: number;
+  };
 
-    if (length === 1) {
-      return `0:0${timeString}`;
-    } else if (length === 2) {
-      return `0:${timeString}`;
-    } else if (length === 3) {
-      return `${timeString[0]}:${timeString.substring(1)}`;
-    } else if (length === 4) {
-      return `${timeString[0] + timeString[1]}:${timeString.substring(2)}`;
-    } else if (length > 4) {
-      const hours = timeString.substring(0, length - 4);
-      const minutes = timeString.substring(length - 4, length - 2);
-      const seconds = timeString.substring(length - 2);
-      return `${hours}:${minutes}:${seconds}`;
-    }
+  function toTime(totalSeconds: number): Time {
+    const totalMinutes = Math.floor(totalSeconds / 60);
+
+    const seconds = totalSeconds % 60;
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    return { h: hours, m: minutes, s: seconds };
   }
 
-  let formattedElapsed = formatTime($player.elapsed.toString());
-  let formattedDuration = formatTime($player.track.duration.toString());
+  function formatTime(time: Time): string {
+    let h = time.h.toString();
+    let m = time.m.toString();
+    let s = time.s.toString();
+
+    if (h === "0") return `${m.padStart(2, "0")}:${s.padStart(2, "0")}`;
+
+    return `${h.padStart(2, "0")}:${m.padStart(2, "0")}:${s.padStart(2, "0")}`;
+  }
+
+  let elapsed = toTime($player.elapsed);
+  let formattedElapsed = formatTime(elapsed);
+
+  let duration = toTime($player.currentTrack.duration);
+  let formattedDuration = formatTime(duration);
+
   let progress = "0";
 
   $: {
-    formattedElapsed = formatTime($player.elapsed.toString());
-    formattedDuration = formatTime($player.track.duration.toString());
+    elapsed = toTime($player.elapsed);
+    formattedElapsed = formatTime(elapsed);
 
-    let percentage = (100 * $player.elapsed) / $player.track.duration;
+    duration = toTime($player.currentTrack.duration);
+    formattedDuration = formatTime(duration);
+
+    let percentage = (100 * $player.elapsed) / $player.currentTrack.duration;
     if (percentage === Infinity) percentage = 0;
     progress = percentage ? percentage.toString() : "0";
   }
@@ -85,9 +97,9 @@
     <div
       class="flex flex-1 justify-center items-center border-r-2 border-gray-600"
     >
-      {#if $player.track.album.cover !== ""}
+      {#if $player.currentTrack.album.cover !== ""}
         <img
-          src={convertFileSrc($player.track.album.cover)}
+          src={convertFileSrc($player.currentTrack.album.cover)}
           class="h-full w-full"
         />
       {/if}
@@ -104,9 +116,9 @@
     <div class="flex flex-row mt-3 ml-5 gap-2 justify-between">
       <div class="flex flex-row gap-2">
         <h1 class="text-xl font-semibold text-gray-300">
-          {$player.track.artist}
+          {$player.currentTrack.artist}
         </h1>
-        <h1 class="text-xl font-light">{$player.track.title}</h1>
+        <h1 class="text-xl font-light">{$player.currentTrack.title}</h1>
       </div>
 
       <div class="flex flex-row mr-5">

@@ -3,7 +3,7 @@ use jwalk::WalkDir;
 use sanitize_filename::sanitize;
 use std::collections::BTreeMap;
 use std::fs::{self, File};
-use std::io::Write;
+use std::io::{BufReader, BufWriter, Write};
 use std::path::{Path, PathBuf};
 use tauri::AppHandle;
 
@@ -53,12 +53,9 @@ fn extract_filename(file_path: &str) -> Option<&str> {
 pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
     let mut sorted_albums: BTreeMap<String, SortedAlbum> = BTreeMap::new();
 
-    println!("start");
-
     let path_resolver = app.path_resolver();
     let dir = path_resolver.app_data_dir().unwrap();
     fs::create_dir_all(&dir).unwrap();
-    println!("created dir");
 
     for entry in WalkDir::new(&p).into_iter().filter_map(Result::ok) {
         let file_name = entry.file_name().to_str().unwrap();
@@ -67,7 +64,7 @@ pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
             Ok(md) => md,
             Err(_) => continue,
         };
-        println!("metadata");
+
         // scan only files
         if !md.is_file() {
             continue;
@@ -77,7 +74,7 @@ pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
             Ok(tag) => tag,
             Err(_) => continue,
         };
-        println!("tag extracted");
+
         let name = extract_filename(file_name).unwrap_or(file_name);
 
         let title = tag.title().unwrap_or(name).to_string();
@@ -90,9 +87,8 @@ pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
         let duration = tag.duration().unwrap_or(0.0);
 
         if let Some(x) = album_cover {
-            if !album_cover_path.try_exists().unwrap_or(false) {
-                println!("dear");
-                let mut file = File::create(&album_cover_path).unwrap();
+            if !album_cover_path.is_file() {
+                let mut file = BufWriter::new(File::create(&album_cover_path).unwrap());
                 file.write_all(x.data).unwrap();
             }
         }
@@ -101,15 +97,13 @@ pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
             .entry(album_name.clone())
             .or_insert_with(|| SortedAlbum {
                 artist: artist.clone(),
-                cover: if album_cover_path.try_exists().unwrap_or(false) {
+                cover: if album_cover_path.is_file() {
                     album_cover_path.to_string_lossy().into_owned()
                 } else {
                     String::new()
                 },
                 tracks: BTreeMap::new(),
             });
-
-        println!("sorted");
 
         let disc_number = tag.disc_number().unwrap_or(1);
         let mut track_number = tag
@@ -136,7 +130,7 @@ pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
         let album = Album {
             name: album_name.clone(),
             artist: artist.clone(),
-            cover: if album_cover_path.try_exists().unwrap_or(false) {
+            cover: if album_cover_path.is_file() {
                 album_cover_path.to_string_lossy().into_owned()
             } else {
                 String::new()
@@ -154,7 +148,6 @@ pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
         };
 
         sorted_album.tracks.insert(track_key, track);
-        println!("inserted");
     }
 
     let payload_albums: Vec<Album> = sorted_albums

@@ -77,6 +77,17 @@ async fn resume(playback_mutex: State<'_, Mutex<PlaybackState>>) -> Result<(), (
     Ok(())
 }
 
+#[tauri::command]
+async fn volume(playback_mutex: State<'_, Mutex<PlaybackState>>, volume: f32) -> Result<(), ()> {
+    let state = playback_mutex.lock().unwrap();
+
+    for sink in &state.sinks {
+        sink.set_volume(volume);
+    }
+
+    Ok(())
+}
+
 fn main() {
     let open_folder = CustomMenuItem::new("open_folder".to_string(), "Open Folder");
     let exit = CustomMenuItem::new("exit".to_string(), "Exit");

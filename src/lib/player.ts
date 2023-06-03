@@ -67,10 +67,7 @@ export function Player(): PlayerType {
       player.interval = setInterval(async () => {
         if (!player.playing) return;
 
-        if (
-          player.elapsed === player.currentTrack.duration &&
-          player.currentTrack.duration !== 0
-        ) {
+        if (player.elapsed === player.currentTrack.duration) {
           clearInterval(player.interval);
 
           await methods.playNext();

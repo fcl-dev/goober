@@ -59,14 +59,16 @@
       {#each tracks as track}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
-          class="hover:cursor-pointer hover:text-gray-400 transition-all track"
+          class="flex hover:cursor-pointer hover:text-gray-400 transition-all track gap-1"
           on:click={(event) => playTrack(track, event)}
         >
-          <span>
-            {track.track}.
-          </span>
+          {#if track.track !== ""}
+            <span>
+              {track.track}.
+            </span>
+          {/if}
 
-          <span class="ml-0.5">
+          <span>
             {track.title}
           </span>
         </div>

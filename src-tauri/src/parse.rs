@@ -31,6 +31,7 @@ struct Album {
     name: String,
     artist: String,
     cover: String,
+    year: i32,
     tracks: Vec<Track>,
 }
 
@@ -42,6 +43,7 @@ pub struct Payload {
 struct SortedAlbum {
     artist: String,
     cover: String,
+    year: i32,
     tracks: BTreeMap<TrackKey, Track>,
 }
 
@@ -82,7 +84,7 @@ pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
             let title = x.title().unwrap_or(name).to_string();
             let artist = x.artist().unwrap_or("").to_string();
             let album_name = x.album_title().unwrap_or(name).to_string();
-
+            let year = x.year().unwrap_or(0);
             let album_cover = x.album_cover();
             let album_cover_path = dir.join(format!("{}{}", sanitize(&album_name), ".png"));
 
@@ -107,6 +109,7 @@ pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
                     .or_insert_with(|| SortedAlbum {
                         artist: artist.clone(),
                         cover: cover.clone(),
+                        year,
                         tracks: BTreeMap::new(),
                     });
 
@@ -136,6 +139,7 @@ pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
                 name: album_name.clone(),
                 artist: artist.clone(),
                 cover,
+                year,
                 tracks: Vec::new(),
             };
 
@@ -167,6 +171,7 @@ pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
             name: album_name.clone(),
             artist: artist.clone(),
             cover: String::new(),
+            year: 0,
             tracks: Vec::new(),
         };
 
@@ -175,6 +180,7 @@ pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
             .or_insert_with(|| SortedAlbum {
                 artist: artist.clone(),
                 cover: String::new(),
+                year: 0,
                 tracks: BTreeMap::new(),
             });
 
@@ -197,15 +203,16 @@ pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
 
     let payload_albums: Vec<Album> = sorted_albums
         .into_iter()
-        .map(|(album_name, album_data)| Album {
+        .map(|(album_name, sorted_album)| Album {
             name: album_name,
-            artist: album_data.artist,
-            cover: album_data.cover,
-            tracks: album_data
+            artist: sorted_album.artist,
+            cover: sorted_album.cover,
+            tracks: sorted_album
                 .tracks
                 .into_iter()
                 .map(|(_, track)| track)
                 .collect(),
+            year: sorted_album.year,
         })
         .collect();
 

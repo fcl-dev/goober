@@ -18,6 +18,7 @@ type Album = {
   name: string;
   artist: string;
   cover: string;
+  year: number;
   tracks: Array<Track>;
 };
 

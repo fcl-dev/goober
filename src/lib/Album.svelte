@@ -9,11 +9,13 @@
   let name = album.name;
   let artist = album.artist;
   let cover = album.cover;
+  let year = album.year;
   let tracks = album.tracks;
 
   $: name = album.name;
   $: artist = album.artist;
   $: cover = album.cover;
+  $: year = album.year;
   $: tracks = album.tracks;
 
   async function playTrack(track: Track, event: MouseEvent) {
@@ -39,8 +41,14 @@
   {#if cover !== ""}
     <img src={convertFileSrc(cover)} class="h-28 w-30 transform-gpu" />
   {/if}
-  <div class="flex flex-col ml-2">
-    <h1 class="mt-2 text-3xl">{name}</h1>
+  <div class="flex flex-col ml-2 w-full">
+    <div class="flex justify-between">
+      <h1 class="mt-2 text-3xl">{name}</h1>
+      {#if year != 0}
+        <h1 class="mt-2 text-3xl mr-5">{year}</h1>
+      {/if}
+    </div>
+
     <h2>{artist}</h2>
 
     <div class="mt-2">

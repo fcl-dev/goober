@@ -1,5 +1,7 @@
 # goober
 
+[![wakatime](https://wakatime.com/badge/user/81d95bac-b8dd-495f-a6ea-b03daa3dc2ca/project/2559889e-dbc9-4052-83d9-22cc16745e71.svg)](https://wakatime.com/badge/user/81d95bac-b8dd-495f-a6ea-b03daa3dc2ca/project/2559889e-dbc9-4052-83d9-22cc16745e71)
+
 ### WIP
 
 ---

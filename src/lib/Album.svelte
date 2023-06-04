@@ -16,18 +16,6 @@
   $: cover = album.cover;
   $: tracks = album.tracks;
 
-  function toMs(number: number) {
-    const paddedNumber = number.toString().padStart(7, "0");
-    const hours = parseInt(paddedNumber.slice(0, -4));
-    const minutes = parseInt(paddedNumber.slice(-4, -2));
-    const seconds = parseInt(paddedNumber.slice(-2));
-
-    // convert the shitty format to millis
-    const ms = hours * 3.6e6 + minutes * 60000 + seconds * 1000;
-
-    return ms;
-  }
-
   async function playTrack(track: Track, event: MouseEvent) {
     const targetHTML = event.target as HTMLElement;
     const target =

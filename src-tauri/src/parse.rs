@@ -63,13 +63,8 @@ pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
     for entry in WalkDir::new(&p).into_iter().filter_map(Result::ok) {
         let file_name = entry.file_name().to_str().unwrap();
 
-        let md = match entry.metadata() {
-            Ok(md) => md,
-            Err(_) => continue,
-        };
-
         // scan only files
-        if !md.is_file() {
+        if !entry.path().is_file() {
             continue;
         }
 
@@ -93,8 +88,8 @@ pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
 
             let duration = probe.properties().duration().as_secs();
 
-            if let Some(x) = album_cover {
-                if !album_cover_path.is_file() {
+            if !album_cover_path.is_file() {
+                if let Some(x) = album_cover {
                     let mut file = BufWriter::new(File::create(&album_cover_path).unwrap());
                     file.write_all(x.data).unwrap();
                 }

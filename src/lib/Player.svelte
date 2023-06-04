@@ -4,6 +4,7 @@
   import { listen } from "@tauri-apps/api/event";
   import { convertFileSrc, invoke } from "@tauri-apps/api/tauri";
   import { Player } from "./player";
+  import { onMount } from "svelte";
 
   let player = Player();
   let allTracks: Track[] = [];
@@ -41,6 +42,9 @@
     for (let album of payload.albums) {
       allTracks.push(...album.tracks);
     }
+
+    localStorage.clear();
+    localStorage.setItem("albums", JSON.stringify(payload.albums));
   });
 
   type Time = {
@@ -76,6 +80,18 @@
   let formattedDuration = formatTime(duration);
 
   let progress = "0";
+
+  onMount(() => {
+    let albums = localStorage.getItem("albums");
+
+    if (!albums) return;
+
+    payload.albums = JSON.parse(albums);
+
+    for (let album of payload.albums) {
+      allTracks.push(...album.tracks);
+    }
+  });
 
   $: {
     elapsed = toTime($player.elapsed);

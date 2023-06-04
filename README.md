@@ -8,11 +8,16 @@
 
 ### What is goober?
 
-goober is a music player, written in Svelte and Rust.
+goober is a music player, written in Svelte and Rust. It's currently in the pre-alpha stage, a.k.a indev.
 
 ### What can goober play?
 
 MP3, WAV, Vorbis, FLAC
+
+### Why does goober take longer amounts of time to scan bigger folders?
+
+The algorithm goober uses stores album covers in AppData (differs in non-Windows platforms),
+and that itself takes some time. goober is constantly being improved in newer versions.
 
 # Credits
 

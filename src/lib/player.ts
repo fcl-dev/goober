@@ -18,6 +18,7 @@ export type PlayerObj = {
   playing: boolean;
   paused: boolean;
   elapsed: number;
+  shuffling: boolean;
   interval?: ReturnType<typeof setInterval>;
   element?: HTMLElement;
 };
@@ -34,6 +35,7 @@ export function Player(): PlayerType {
         name: "goober",
         artist: "goober",
         cover: "",
+        year: 0,
         tracks: [],
       },
 
@@ -42,6 +44,7 @@ export function Player(): PlayerType {
       path: "",
       title: "version pre-a1.0",
     },
+    shuffling: false,
     tracks: [],
     i: 0,
     playing: false,
@@ -82,7 +85,7 @@ export function Player(): PlayerType {
       player.playing = true;
       player.paused = false;
 
-      if (player.element) player.element.classList.add("text-cyan-400");
+      if (player.element) player.element.classList.add("text-blue-400");
 
       announce();
     },
@@ -91,7 +94,7 @@ export function Player(): PlayerType {
       player.i--;
       player.currentTrack = player.tracks[player.i];
 
-      player.element.classList.remove("text-cyan-400");
+      player.element.classList.remove("text-blue-400");
 
       let elements = [
         ...(document.getElementsByClassName(
@@ -99,8 +102,7 @@ export function Player(): PlayerType {
         ) as HTMLCollectionOf<HTMLElement>),
       ];
 
-      let index = elements.findIndex((x) => x === player.element) - 1;
-      let previousElement = elements[index];
+      let previousElement = elements[player.i];
 
       player.element = previousElement;
 
@@ -114,13 +116,43 @@ export function Player(): PlayerType {
       methods.play(player.currentTrack);
 
       announce();
+      return;
     },
 
     async playNext() {
-      player.i++;
+      if (!player.shuffling) {
+        player.i++;
+        player.currentTrack = player.tracks[player.i];
+
+        player.element.classList.remove("text-blue-400");
+
+        let elements = [
+          ...(document.getElementsByClassName(
+            "track"
+          ) as HTMLCollectionOf<HTMLElement>),
+        ];
+
+        let nextElement = elements[player.i];
+
+        player.element = nextElement;
+
+        if (!player.currentTrack) {
+          player.i = 0;
+          player.currentTrack = player.tracks[player.i];
+
+          player.element = elements[player.i];
+        }
+
+        methods.play(player.currentTrack);
+
+        announce();
+        return;
+      }
+
+      player.i = Math.floor(Math.random() * player.tracks.length);
       player.currentTrack = player.tracks[player.i];
 
-      player.element.classList.remove("text-cyan-400");
+      player.element.classList.remove("text-blue-400");
 
       let elements = [
         ...(document.getElementsByClassName(
@@ -128,27 +160,17 @@ export function Player(): PlayerType {
         ) as HTMLCollectionOf<HTMLElement>),
       ];
 
-      let index = elements.findIndex((x) => x === player.element) + 1;
-      let nextElement = elements[index];
-
+      let nextElement = elements[player.i];
       player.element = nextElement;
 
-      if (!player.currentTrack) {
-        player.i = 0;
-        player.currentTrack = player.tracks[player.i];
-
-        player.element = elements[player.i];
-      }
-
       methods.play(player.currentTrack);
-
       announce();
     },
     async updateElement(element: HTMLElement) {
-      if (player.element) player.element.classList.remove("text-cyan-400");
+      if (player.element) player.element.classList.remove("text-blue-400");
 
       player.element = element;
-      player.element.classList.add("text-cyan-400");
+      player.element.classList.add("text-blue-400");
 
       announce();
     },
@@ -160,6 +182,7 @@ export function Player(): PlayerType {
             name: "goober",
             artist: "goober",
             cover: "",
+            year: 0,
             tracks: [],
           },
 
@@ -168,6 +191,7 @@ export function Player(): PlayerType {
           path: "",
           title: "version pre-a1.0",
         },
+        shuffling: false,
         tracks: [],
         i: 0,
         playing: false,

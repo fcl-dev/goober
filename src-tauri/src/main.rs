@@ -113,7 +113,7 @@ fn main() {
             }
             _ => {}
         })
-        .invoke_handler(tauri::generate_handler![play, stop, pause, resume])
+        .invoke_handler(tauri::generate_handler![play, stop, pause, resume, volume])
         .manage(Mutex::new(PlaybackState::new(stream.1)))
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

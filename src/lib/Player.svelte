@@ -14,7 +14,6 @@
     const rect = progressBar.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const percentage = (x / rect.width) * 100;
-    console.log(`Clicked at ${percentage}%`);
   }
 
   const onKeyDown = (e: KeyboardEvent) => {
@@ -122,6 +121,14 @@
     </div>
 
     <div class="flex-1 max-h-full overflow-auto gap-1">
+      <div class="border-b-2 border-b-gray-500 mb-1 mt-2">
+        <input
+          type="text"
+          placeholder="Search"
+          class="input input-bordered w-full max-w-xs ml-1 mb-2"
+        />
+      </div>
+
       {#each payload.albums as album}
         <Album {album} bind:player bind:allTracks />
       {/each}

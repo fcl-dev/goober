@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { setInterval, clearInterval } from "worker-timers";
 
 export type PlayerType = {
+  tryClearInterval(): Promise<void>;
   play(track: Track): Promise<void>;
   playPrevious(): Promise<void>;
   playNext(): Promise<void>;
@@ -60,19 +61,28 @@ export function Player(): PlayerType {
   };
 
   let methods = {
+    async tryClearInterval() {
+      if (!player.interval) return;
+
+      clearInterval(player.interval);
+
+      player.interval = null;
+
+      announce();
+    },
     async play(track: Track) {
       await invoke("play", {
         path: track.path,
       });
 
-      clearInterval(player.interval);
+      methods.tryClearInterval();
       player.elapsed = 0;
 
       player.interval = setInterval(async () => {
         if (!player.playing) return;
 
         if (player.elapsed === player.currentTrack.duration) {
-          clearInterval(player.interval);
+          methods.tryClearInterval();
 
           await methods.playNext();
         }

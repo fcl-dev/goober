@@ -15,7 +15,7 @@
   let shuffling = false;
 
   const stop = () => {
-    clearInterval($player.interval);
+    player.tryClearInterval();
 
     if ($player.element) $player.element.classList.remove("text-blue-400");
 

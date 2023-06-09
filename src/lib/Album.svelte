@@ -23,7 +23,7 @@
     const target =
       targetHTML.children.length > 0 ? targetHTML : targetHTML.parentElement;
 
-    clearInterval($player.interval);
+    player.tryClearInterval();
 
     player.updateElement(target);
 

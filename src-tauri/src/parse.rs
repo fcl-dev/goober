@@ -59,8 +59,8 @@ pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
     let mut sorted_albums: BTreeMap<String, SortedAlbum> = BTreeMap::new();
 
     let path_resolver = app.path_resolver();
-    let dir = path_resolver.app_data_dir().unwrap();
-    fs::create_dir_all(&dir).unwrap();
+    let cover_dir = path_resolver.app_data_dir().unwrap().join("covers");
+    fs::create_dir_all(&cover_dir).unwrap();
 
     for entry in WalkDir::new(&p).into_iter().filter_map(Result::ok) {
         let file_name = entry.file_name().to_str().unwrap();
@@ -86,7 +86,7 @@ pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
             let album_name = x.album_title().unwrap_or(name).to_string();
             let year = x.year().unwrap_or(0);
             let album_cover = x.album_cover();
-            let album_cover_path = dir.join(format!("{}{}", sanitize(&album_name), ".png"));
+            let album_cover_path = cover_dir.join(format!("{}{}", sanitize(&album_name), ".png"));
 
             let duration = probe.properties().duration().as_secs();
 

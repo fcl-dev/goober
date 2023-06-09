@@ -36,6 +36,8 @@
 
   listen("music", (event) => {
     payload = event.payload as Payload;
+
+    payload.albums.sort((a, b) => (a.year > b.year ? 1 : -1));
     allTracks = [];
 
     for (let album of payload.albums) {

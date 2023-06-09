@@ -1,19 +1,7 @@
 import { invoke } from "@tauri-apps/api/tauri";
 import { setInterval, clearInterval } from "worker-timers";
 
-export type PlayerType = {
-  tryClearInterval(): Promise<void>;
-  play(track: Track): Promise<void>;
-  playPrevious(): Promise<void>;
-  playNext(): Promise<void>;
-  updateElement(element: HTMLElement): Promise<void>;
-  default(): Promise<void>;
-  subscribe(subscriber: Subscriber): () => void;
-  set(newPlayer: PlayerObj): void;
-  update(x: (player: PlayerObj) => void): void;
-};
-
-export type PlayerObj = {
+export type Player = {
   currentTrack?: Track;
   tracks: Track[];
   i: number;
@@ -25,12 +13,12 @@ export type PlayerObj = {
   element?: HTMLElement;
 };
 
-type Subscriber = (player: PlayerObj) => void;
+type Subscriber = (player: Player) => void;
 
-export function Player(): PlayerType {
+export function Player() {
   const subscribers: Set<Subscriber> = new Set();
 
-  let player: PlayerObj = {
+  let player: Player = {
     currentTrack: {
       track: "",
       album: {
@@ -220,12 +208,12 @@ export function Player(): PlayerType {
         subscribers.delete(subscriber);
       };
     },
-    set(newPlayer: PlayerObj) {
+    set(newPlayer: Player) {
       player = newPlayer;
 
       announce();
     },
-    update(x: (player: PlayerObj) => void) {
+    update(x: (player: Player) => void) {
       x(player);
 
       announce();

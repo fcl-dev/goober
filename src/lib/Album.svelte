@@ -1,8 +1,8 @@
 <script lang="ts">
   import { convertFileSrc } from "@tauri-apps/api/tauri";
-  import type { PlayerType } from "./player";
+  import type { Player } from "./player";
 
-  export let player: PlayerType;
+  export let player: ReturnType<typeof Player>;
   export let album: Album;
   export let allTracks: Track[];
 

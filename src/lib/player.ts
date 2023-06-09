@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/tauri";
+import { setInterval, clearInterval } from "worker-timers";
 
 export type PlayerType = {
   play(track: Track): Promise<void>;

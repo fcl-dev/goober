@@ -7,7 +7,7 @@
   import { onMount } from "svelte";
 
   let player = Player();
-  let allTracks: Track[] = [];
+  let allTracks: Goober.Track[] = [];
 
   function progressBar(event: MouseEvent) {
     const progressBar = event.target as HTMLElement;
@@ -30,22 +30,20 @@
     }
   };
 
-  let payload: Payload = {
-    albums: [],
-  };
+  let albums: Goober.Album[] = [];
 
   listen("music", (event) => {
-    payload = event.payload as Payload;
+    albums = (event.payload as Goober.Payload).albums;
 
-    payload.albums.sort((a, b) => (a.year > b.year ? 1 : -1));
+    albums.sort((a, b) => (a.year > b.year ? 1 : -1));
     allTracks = [];
 
-    for (let album of payload.albums) {
+    for (let album of albums) {
       allTracks.push(...album.tracks);
     }
 
     localStorage.clear();
-    localStorage.setItem("albums", JSON.stringify(payload.albums));
+    localStorage.setItem("albums", JSON.stringify(albums));
   });
 
   type Time = {
@@ -83,15 +81,20 @@
   let progress = "0";
 
   onMount(() => {
-    let albums = localStorage.getItem("albums");
+    document.addEventListener("contextmenu", (event) => event.preventDefault());
 
-    if (!albums) return;
+    let storageAlbums = localStorage.getItem("albums");
 
-    payload.albums = JSON.parse(albums);
+    if (!storageAlbums) return;
 
-    for (let album of payload.albums) {
+    let parsedAlbums = JSON.parse(storageAlbums);
+
+    for (let album of parsedAlbums) {
+      console.log(album);
       allTracks.push(...album.tracks);
     }
+
+    albums = parsedAlbums;
   });
 
   $: {
@@ -131,7 +134,7 @@
         />
       </div>
 
-      {#each payload.albums as album}
+      {#each albums as album}
         <Album {album} bind:player bind:allTracks />
       {/each}
     </div>

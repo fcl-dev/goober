@@ -3,8 +3,8 @@
   import type { Player } from "./player";
 
   export let player: ReturnType<typeof Player>;
-  export let album: Album;
-  export let allTracks: Track[];
+  export let album: Goober.Album;
+  export let allTracks: Goober.Track[];
 
   let name = album.name;
   let artist = album.artist;
@@ -18,7 +18,7 @@
   $: year = album.year;
   $: tracks = album.tracks;
 
-  async function playTrack(track: Track, event: MouseEvent) {
+  async function playTrack(track: Goober.Track, event: MouseEvent) {
     const targetHTML = event.target as HTMLElement;
     const target =
       targetHTML.children.length > 0 ? targetHTML : targetHTML.parentElement;

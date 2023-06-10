@@ -2,8 +2,8 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { setInterval, clearInterval } from "worker-timers";
 
 export type Player = {
-  currentTrack?: Track;
-  tracks: Track[];
+  currentTrack?: Goober.Track;
+  tracks: Goober.Track[];
   i: number;
   playing: boolean;
   paused: boolean;
@@ -58,7 +58,7 @@ export function Player() {
 
       announce();
     },
-    async play(track: Track) {
+    async play(track: Goober.Track) {
       await invoke("play", {
         path: track.path,
       });

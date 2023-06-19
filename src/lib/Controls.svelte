@@ -11,7 +11,7 @@
 
 	export let player: ReturnType<typeof Player>;
 
-	let volume = 1;
+	let volume = 100;
 	let shuffling = false;
 
 	const stop = async () => await player.stop();
@@ -104,6 +104,14 @@
 		</div>
 	</div>
 	<div class="absolute right-0">
-		<h1 class="text-xl">hdsdoiu</h1>
+		<input
+			type="range"
+			class="accent-blue-400 mr-2"
+			bind:value={volume}
+			on:change={(_) =>
+				invoke('volume', {
+					volume: volume / 100
+				})}
+		/>
 	</div>
 </div>

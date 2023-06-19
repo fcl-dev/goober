@@ -1,224 +1,275 @@
-import { invoke } from "@tauri-apps/api/tauri";
-import { setInterval, clearInterval } from "worker-timers";
+import { invoke } from '@tauri-apps/api/tauri';
+import { setInterval, clearInterval } from 'worker-timers';
 
 export type Player = {
-  currentTrack?: Goober.Track;
-  tracks: Goober.Track[];
-  i: number;
-  playing: boolean;
-  paused: boolean;
-  elapsed: number;
-  shuffling: boolean;
-  interval?: ReturnType<typeof setInterval>;
-  element?: HTMLElement;
+	currentTrack?: Goober.Track;
+	tracks: Goober.Track[];
+	i: number;
+	playing: boolean;
+	paused: boolean;
+	elapsed: number;
+	shuffling: boolean;
+	interval?: ReturnType<typeof setInterval>;
+	element?: HTMLElement;
 };
 
 type Subscriber = (player: Player) => void;
 
 export function Player() {
-  const subscribers: Set<Subscriber> = new Set();
+	const subscribers: Set<Subscriber> = new Set();
 
-  let player: Player = {
-    currentTrack: {
-      track: "",
-      album: {
-        name: "goober",
-        artist: "goober",
-        cover: "",
-        year: 0,
-        tracks: [],
-      },
+	let player: Player = {
+		currentTrack: {
+			track: '',
+			album: {
+				name: 'goober',
+				artist: 'goober',
+				cover: '',
+				year: 0,
+				tracks: []
+			},
 
-      artist: "goober",
-      duration: 0,
-      path: "",
-      title: "version pre-a1.0",
-    },
-    shuffling: false,
-    tracks: [],
-    i: 0,
-    playing: false,
-    paused: false,
-    elapsed: 0,
-  };
+			artist: 'goober',
+			duration: 0,
+			path: '',
+			title: 'version pre-a1.0'
+		},
+		shuffling: false,
+		tracks: [],
+		i: 0,
+		playing: false,
+		paused: false,
+		elapsed: 0
+	};
 
-  let announce = () => {
-    subscribers.forEach((subscriber) => {
-      subscriber(player);
-    });
-  };
+	const announce = () => {
+		subscribers.forEach((subscriber) => {
+			subscriber(player);
+		});
+	};
 
-  let methods = {
-    async tryClearInterval() {
-      if (!player.interval) return;
+	const methods = {
+		async tryClearInterval() {
+			if (!player.interval) return;
 
-      clearInterval(player.interval);
+			clearInterval(player.interval);
 
-      player.interval = null;
+			player.interval = undefined;
 
-      announce();
-    },
-    async play(track: Goober.Track) {
-      await invoke("play", {
-        path: track.path,
-      });
+			announce();
+		},
+		async play(track: Goober.Track) {
+			await invoke('play', {
+				path: track.path
+			});
 
-      methods.tryClearInterval();
-      player.elapsed = 0;
+			methods.tryClearInterval();
+			player.elapsed = 0;
 
-      player.interval = setInterval(async () => {
-        if (!player.playing) return;
+			player.interval = setInterval(async () => {
+				if (!player.playing) return;
 
-        if (player.elapsed === player.currentTrack.duration) {
-          methods.tryClearInterval();
+				if (player.elapsed === player.currentTrack?.duration) {
+					methods.tryClearInterval();
 
-          await methods.playNext();
-        }
+					await methods.playNext();
+				}
 
-        player.elapsed++;
+				player.elapsed++;
 
-        announce();
-      }, 1000);
+				announce();
+			}, 1000);
 
-      player.currentTrack = track;
-      player.playing = true;
-      player.paused = false;
+			player.currentTrack = track;
+			player.playing = true;
+			player.paused = false;
 
-      if (player.element) player.element.classList.add("text-blue-400");
+			if (player.element) {
+				player.element.classList.add('text-blue-400');
+			}
 
-      announce();
-    },
+			announce();
 
-    async playPrevious() {
-      player.i--;
-      player.currentTrack = player.tracks[player.i];
+			await invoke('set_presence', {
+				presence: {
+					state: 'Playing',
+					details: `${player.currentTrack.artist} - ${player.currentTrack.title}`
+				}
+			});
+		},
+		async resume() {
+			if (player.paused) {
+				player.playing = true;
+				player.paused = false;
 
-      player.element.classList.remove("text-blue-400");
+				announce();
 
-      let elements = [
-        ...(document.getElementsByClassName(
-          "track"
-        ) as HTMLCollectionOf<HTMLElement>),
-      ];
+				await invoke('resume');
+				await invoke('set_presence', {
+					presence: {
+						state: 'Playing',
+						details: `${player.currentTrack?.artist} - ${player.currentTrack?.title}`
+					}
+				});
+			}
+		},
+		async pause() {
+			player.playing = false;
+			player.paused = true;
 
-      let previousElement = elements[player.i];
+			announce();
 
-      player.element = previousElement;
+			await invoke('pause');
+			await invoke('set_presence', {
+				presence: {
+					state: 'Paused',
+					details: `${player.currentTrack?.artist} - ${player.currentTrack?.title}`
+				}
+			});
+		},
+		async playPrevious() {
+			player.i--;
+			player.currentTrack = player.tracks[player.i];
 
-      if (!player.currentTrack) {
-        player.i = player.tracks.length - 1;
-        player.currentTrack = player.tracks[player.i];
+			player.element?.classList.remove('text-blue-400');
 
-        player.element = elements[player.i];
-      }
+			const elements = [
+				...(document.getElementsByClassName('track') as HTMLCollectionOf<HTMLElement>)
+			];
 
-      methods.play(player.currentTrack);
+			const previousElement = elements[player.i];
 
-      announce();
-      return;
-    },
+			player.element = previousElement;
 
-    async playNext() {
-      if (!player.shuffling) {
-        player.i++;
-        player.currentTrack = player.tracks[player.i];
+			if (!player.currentTrack) {
+				player.i = player.tracks.length - 1;
+				player.currentTrack = player.tracks[player.i];
 
-        player.element.classList.remove("text-blue-400");
+				player.element = elements[player.i];
+			}
 
-        let elements = [
-          ...(document.getElementsByClassName(
-            "track"
-          ) as HTMLCollectionOf<HTMLElement>),
-        ];
+			methods.play(player.currentTrack);
 
-        let nextElement = elements[player.i];
+			announce();
+			return;
+		},
 
-        player.element = nextElement;
+		async playNext() {
+			if (!player.shuffling) {
+				player.i++;
+				player.currentTrack = player.tracks[player.i];
 
-        if (!player.currentTrack) {
-          player.i = 0;
-          player.currentTrack = player.tracks[player.i];
+				player.element?.classList.remove('text-blue-400');
 
-          player.element = elements[player.i];
-        }
+				const elements = [
+					...(document.getElementsByClassName('track') as HTMLCollectionOf<HTMLElement>)
+				];
 
-        methods.play(player.currentTrack);
+				const nextElement = elements[player.i];
 
-        announce();
-        return;
-      }
+				player.element = nextElement;
 
-      player.i = Math.floor(Math.random() * player.tracks.length);
-      player.currentTrack = player.tracks[player.i];
+				if (!player.currentTrack) {
+					player.i = 0;
+					player.currentTrack = player.tracks[player.i];
 
-      player.element.classList.remove("text-blue-400");
+					player.element = elements[player.i];
+				}
 
-      let elements = [
-        ...(document.getElementsByClassName(
-          "track"
-        ) as HTMLCollectionOf<HTMLElement>),
-      ];
+				methods.play(player.currentTrack);
 
-      let nextElement = elements[player.i];
-      player.element = nextElement;
+				announce();
+				return;
+			}
 
-      methods.play(player.currentTrack);
-      announce();
-    },
-    async updateElement(element: HTMLElement) {
-      if (player.element) player.element.classList.remove("text-blue-400");
+			player.i = Math.floor(Math.random() * player.tracks.length);
+			player.currentTrack = player.tracks[player.i];
 
-      player.element = element;
-      player.element.classList.add("text-blue-400");
+			player.element?.classList.remove('text-blue-400');
 
-      announce();
-    },
-    async default() {
-      player = {
-        currentTrack: {
-          track: "",
-          album: {
-            name: "goober",
-            artist: "goober",
-            cover: "",
-            year: 0,
-            tracks: [],
-          },
+			const elements = [
+				...(document.getElementsByClassName('track') as HTMLCollectionOf<HTMLElement>)
+			];
 
-          artist: "goober",
-          duration: 0,
-          path: "",
-          title: "version pre-a1.0",
-        },
-        shuffling: false,
-        tracks: [],
-        i: 0,
-        playing: false,
-        paused: false,
-        elapsed: 0,
-      };
+			const nextElement = elements[player.i];
+			player.element = nextElement;
 
-      announce();
-    },
-    subscribe(subscriber: Subscriber) {
-      subscribers.add(subscriber);
-      subscriber(player);
+			methods.play(player.currentTrack);
+			announce();
+		},
+		async stop() {
+			methods.tryClearInterval();
 
-      return () => {
-        subscribers.delete(subscriber);
-      };
-    },
-    set(newPlayer: Player) {
-      player = newPlayer;
+			if (player.element) player.element.classList.remove('text-blue-400');
 
-      announce();
-    },
-    update(x: (player: Player) => void) {
-      x(player);
+			await invoke('stop');
 
-      announce();
-    },
-  };
+			methods.default();
 
-  return methods;
+			announce();
+			console.log(player.tracks.length);
+
+			await invoke('set_presence', {
+				presence: {
+					state: 'Browsing',
+					details: `${player.tracks.length} tracks loaded`
+				}
+			});
+		},
+		async updateElement(element: HTMLElement) {
+			if (player.element) player.element.classList.remove('text-blue-400');
+
+			player.element = element;
+			player.element.classList.add('text-blue-400');
+
+			announce();
+		},
+		async default() {
+			player = {
+				currentTrack: {
+					track: '',
+					album: {
+						name: 'goober',
+						artist: 'goober',
+						cover: '',
+						year: 0,
+						tracks: []
+					},
+
+					artist: 'goober',
+					duration: 0,
+					path: '',
+					title: 'version pre-a1.0'
+				},
+				shuffling: false,
+				tracks: [],
+				i: 0,
+				playing: false,
+				paused: false,
+				elapsed: 0
+			};
+
+			announce();
+		},
+		subscribe(subscriber: Subscriber) {
+			subscribers.add(subscriber);
+			subscriber(player);
+
+			return () => {
+				subscribers.delete(subscriber);
+			};
+		},
+		set(newPlayer: Player) {
+			player = newPlayer;
+
+			announce();
+		},
+		update(x: (player: Player) => void) {
+			x(player);
+
+			announce();
+		}
+	};
+
+	return methods;
 }

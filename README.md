@@ -1,38 +1,24 @@
-# create-svelte
+# goober
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+[![wakatime](https://wakatime.com/badge/user/81d95bac-b8dd-495f-a6ea-b03daa3dc2ca/project/2559889e-dbc9-4052-83d9-22cc16745e71.svg)](https://wakatime.com/badge/user/81d95bac-b8dd-495f-a6ea-b03daa3dc2ca/project/2559889e-dbc9-4052-83d9-22cc16745e71)
 
-## Creating a project
+### WIP
 
-If you're seeing this, you've probably already done this step. Congrats!
+---
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+### What is goober?
 
-# create a new project in my-app
-npm create svelte@latest my-app
-```
+goober is a music player, written in Svelte and Rust. It's currently in the pre-alpha stage, a.k.a indev.
 
-## Developing
+### What can goober play?
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+MP3, WAV, Vorbis, FLAC
 
-```bash
-npm run dev
+### Why does goober take longer amounts of time to scan bigger folders?
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+The algorithm goober uses stores album covers in AppData (differs in non-Windows platforms),
+and that itself takes some time. goober is constantly being improved in newer versions.
 
-## Building
+# Credits
 
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+[Georgia-ReBORN](https://github.com/TT-ReBORN/Georgia-ReBORN), I used it on foobar2000 before and it had a really nice layout, so I used a similar one for goober.

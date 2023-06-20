@@ -170,7 +170,7 @@
 				</div>
 			</div>
 
-			<div>
+			<div class="flex flex-col gap-y-1.5">
 				{#each albums as album}
 					<Album {album} bind:player bind:allTracks />
 				{/each}

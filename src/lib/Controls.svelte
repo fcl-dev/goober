@@ -5,6 +5,9 @@
 	import FaStop from 'svelte-icons/fa/FaStop.svelte';
 	import FaPause from 'svelte-icons/fa/FaPause.svelte';
 	import MdShuffle from 'svelte-icons/md/MdShuffle.svelte';
+	import FaVolumeUp from 'svelte-icons/fa/FaVolumeUp.svelte';
+	import FaVolumeDown from 'svelte-icons/fa/FaVolumeDown.svelte';
+	import FaVolumeMute from 'svelte-icons/fa/FaVolumeMute.svelte';
 
 	import { invoke } from '@tauri-apps/api/tauri';
 	import type { Player } from './player';
@@ -38,19 +41,6 @@
 
 		$player.shuffling = shuffling;
 	};
-
-	function volumeBar(event: MouseEvent) {
-		const progressBar = event.target as HTMLElement;
-		const rect = progressBar.getBoundingClientRect();
-		const x = event.clientX - rect.left;
-		const percentage = x / rect.width;
-
-		volume = percentage;
-
-		invoke('volume', {
-			volume
-		});
-	}
 </script>
 
 <div class="flex">
@@ -103,7 +93,19 @@
 			<MdShuffle />
 		</div>
 	</div>
-	<div class="absolute right-0">
+	<div class="flex gap-2 absolute right-0 mt-1.5">
+		<div class="flex h-4 w-4">
+			{#if volume == 0}
+				<FaVolumeMute />
+			{/if}
+			{#if volume > 0 && volume <= 50}
+				<FaVolumeDown />
+			{/if}
+			{#if volume > 50}
+				<FaVolumeUp />
+			{/if}
+		</div>
+
 		<input
 			type="range"
 			class="accent-blue-400 mr-2"

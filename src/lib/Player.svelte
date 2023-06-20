@@ -181,15 +181,17 @@
 	<div class="flex flex-col h-[95px] border-t-2 border-gray-600">
 		<div class="flex flex-row mt-3 ml-5 gap-2 justify-between">
 			<div class="flex flex-row gap-2">
-				<h1 class="text-xl font-semibold text-gray-300">
+				<h1 class="text-xl font-semibold text-gray-300 overflow-ellipsis whitespace-nowrap">
 					{$player.currentTrack?.artist}
 				</h1>
-				<h1 class="text-xl font-light">{$player.currentTrack?.title}</h1>
+				<h1 class="text-xl font-light overflow-ellipsis whitespace-nowrap">
+					{$player.currentTrack?.title}
+				</h1>
 			</div>
 
 			<div class="flex flex-row mr-5">
 				{#if $player.playing || $player.paused}
-					<h1 class="text-xl">
+					<h1 class="text-xl whitespace-nowrap">
 						<span class="font-semibold">{formattedElapsed}</span>
 						<span class="font-thin">{formattedDuration}</span>
 					</h1>

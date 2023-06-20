@@ -3,7 +3,7 @@
 
 mod parse;
 
-use declarative_discord_rich_presence::activity::Activity;
+use declarative_discord_rich_presence::activity::{Activity, Assets};
 use declarative_discord_rich_presence::DeclarativeDiscordIpcClient;
 use parse::parse_folder;
 use serde::{Deserialize, Serialize};
@@ -104,6 +104,7 @@ async fn set_presence(
     discord_ipc_client
         .set_activity(
             Activity::new()
+                .assets(Assets::new().large_image("gooberlogo"))
                 .state(&presence.state)
                 .details(&presence.details),
         )

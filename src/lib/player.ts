@@ -9,6 +9,7 @@ export type Player = {
 	paused: boolean;
 	elapsed: number;
 	shuffling: boolean;
+	volume: number;
 	interval?: ReturnType<typeof setInterval>;
 	element?: HTMLElement;
 };
@@ -37,6 +38,7 @@ export function Player() {
 		shuffling: false,
 		tracks: [],
 		i: 0,
+		volume: 100,
 		playing: false,
 		paused: false,
 		elapsed: 0
@@ -59,7 +61,7 @@ export function Player() {
 			announce();
 		},
 		async play(track: Goober.Track) {
-			await invoke('play', {
+			invoke('play', {
 				path: track.path
 			});
 
@@ -244,6 +246,7 @@ export function Player() {
 				shuffling: false,
 				tracks: [],
 				i: 0,
+				volume: 100,
 				playing: false,
 				paused: false,
 				elapsed: 0

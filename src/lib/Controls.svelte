@@ -110,10 +110,13 @@
 			type="range"
 			class="accent-blue-400 mr-2"
 			bind:value={volume}
-			on:input={(_) =>
+			on:input={(_) => {
+				$player.volume = volume / 100;
+
 				invoke('volume', {
 					volume: volume / 100
-				})}
+				});
+			}}
 		/>
 	</div>
 </div>

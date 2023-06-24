@@ -48,13 +48,13 @@ async fn play(
     let mut state = playback_mutex.lock().unwrap();
 
     let sink = Sink::try_new(&state.stream).unwrap();
-    sink.set_volume(volume);
-
     state.sink.clear();
 
     let file = BufReader::new(File::open(path).unwrap());
     let source = Decoder::new(file).unwrap();
     sink.append(source);
+
+    sink.set_volume(volume);
 
     state.sink = sink;
 

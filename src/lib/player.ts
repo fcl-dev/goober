@@ -34,7 +34,7 @@ export function Player() {
 		shuffling: false,
 		tracks: [],
 		i: 0,
-		volume: 100,
+		volume: 1,
 		playing: false,
 		paused: false,
 		elapsed: 0
@@ -59,7 +59,7 @@ export function Player() {
 		async play(track: Goober.Track) {
 			invoke('play', {
 				path: track.path,
-				volume: player.volume / 100
+				volume: player.volume
 			});
 
 			methods.tryClearInterval();
@@ -241,7 +241,7 @@ export function Player() {
 				shuffling: false,
 				tracks: [],
 				i: 0,
-				volume: 100,
+				volume: player.volume,
 				playing: false,
 				paused: false,
 				elapsed: 0

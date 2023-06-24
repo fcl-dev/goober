@@ -1,11 +1,15 @@
-use audiotags::{Picture, Tag};
+use std::{
+    collections::{BTreeMap, HashMap},
+    ffi::OsStr,
+    fs::{self, File},
+    io::{BufWriter, Write},
+    path::{Path, PathBuf},
+};
+
+use audiotags::{MimeType, Picture, Tag};
 use jwalk::WalkDir;
-use lofty::{AudioFile, Probe};
+use lofty::{read_from_path, AudioFile, ParseOptions, Probe, TaggedFileExt};
 use sanitize_filename::sanitize;
-use std::collections::BTreeMap;
-use std::fs::{self, File};
-use std::io::{BufReader, BufWriter, Write};
-use std::path::{Path, PathBuf};
 use tauri::AppHandle;
 
 #[derive(Clone, serde::Serialize, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -17,11 +21,13 @@ struct TrackKey {
 #[derive(Clone, serde::Serialize, Debug, Eq, PartialEq, Ord, PartialOrd)]
 #[serde(rename_all = "camelCase")]
 struct Track {
+    #[serde(skip_serializing)]
+    key: TrackKey,
     track: String,
     title: String,
     path: PathBuf,
     artist: String,
-    album: Album,
+    track_album: TrackAlbum,
     duration: u64,
 }
 
@@ -35,16 +41,11 @@ struct Album {
     tracks: Vec<Track>,
 }
 
-#[derive(Clone, serde::Serialize)]
-pub struct Payload {
-    albums: Vec<Album>,
-}
-
-struct SortedAlbum {
-    artist: String,
+#[derive(Clone, serde::Serialize, Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[serde(rename_all = "camelCase")]
+/// Basic information required just for the proper displaying of tracks.
+struct TrackAlbum {
     cover: String,
-    year: i32,
-    tracks: BTreeMap<TrackKey, Track>,
 }
 
 fn extract_filename(file_path: &str) -> Option<&str> {
@@ -53,10 +54,30 @@ fn extract_filename(file_path: &str) -> Option<&str> {
         .and_then(|name| name.to_str())
 }
 
-// TODO: use HashMaps instead of BTreeMaps to ditch useless iteration
-// TODO: make albums that have various artists say "Various Artists" instead of the first artist it finds
+#[derive(Clone, serde::Serialize)]
+pub struct Payload {
+    albums: Vec<Album>,
+}
+
+// shoutout to u#5987669 in stackoverflow, this is way easier and more intuitive to use!
+pub trait FileExtension {
+    fn has_extension<S: AsRef<str>>(&self, extensions: &[S]) -> bool;
+}
+
+impl<P: AsRef<Path>> FileExtension for P {
+    fn has_extension<S: AsRef<str>>(&self, extensions: &[S]) -> bool {
+        if let Some(ref extension) = self.as_ref().extension().and_then(OsStr::to_str) {
+            return extensions
+                .iter()
+                .any(|x| x.as_ref().eq_ignore_ascii_case(extension));
+        }
+
+        false
+    }
+}
+
 pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
-    let mut sorted_albums: BTreeMap<String, SortedAlbum> = BTreeMap::new();
+    let mut albums: Vec<Album> = vec![];
 
     let path_resolver = app.path_resolver();
     let cover_dir = path_resolver.app_data_dir().unwrap().join("covers");
@@ -64,159 +85,143 @@ pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
 
     for entry in WalkDir::new(&p).into_iter().filter_map(Result::ok) {
         let file_name = entry.file_name().to_str().unwrap();
+        let entry_path = entry.path();
 
-        // scan only files
-        if !entry.path().is_file() {
+        if !entry_path.is_file()
+            || !entry_path
+                .as_path()
+                .has_extension(&["mp3", "wav", "ogg", "flac"])
+        {
             continue;
         }
 
-        let probe = match Probe::open(entry.path().clone()).unwrap().read() {
-            Ok(x) => x,
-            Err(_) => continue,
-        };
+        let mut tag = Tag::new().read_from_path(entry_path);
+        let name = extract_filename(file_name).unwrap_or(file_name);
 
-        let tag = Tag::default().read_from_path(entry.path());
+        if let Ok(t) = tag {
+            let title = t.title().unwrap_or(name).to_string();
+            let artist = t.artist().unwrap_or("Unknown Artist").to_string();
+            let album_name = t.album_title().unwrap_or(name).to_string();
+            let year = t.year().unwrap_or(0);
+            let cover = t.album_cover();
+            let cover_path = cover_dir.join(format!("{}{}", sanitize(&album_name), ".jpg"));
 
-        // reading through tags...
-        if let Ok(x) = tag {
-            let name = extract_filename(file_name).unwrap_or(file_name);
+            let disc_number = t.disc_number().unwrap_or(1);
+            let track_number = t.track_number().unwrap_or(1);
 
-            let title = x.title().unwrap_or(name).to_string();
-            let artist = x.artist().unwrap_or("").to_string();
-            let album_name = x.album_title().unwrap_or(name).to_string();
-            let year = x.year().unwrap_or(0);
-            let album_cover = x.album_cover();
-            let album_cover_path = cover_dir.join(format!("{}{}", sanitize(&album_name), ".png"));
+            let mut duration = t.duration().unwrap_or(0.0) as u64;
 
-            let duration = probe.properties().duration().as_secs();
-
-            if !album_cover_path.is_file() {
-                if let Some(x) = album_cover {
-                    let mut file = BufWriter::new(File::create(&album_cover_path).unwrap());
-                    file.write_all(x.data).unwrap();
+            if !cover_path.is_file() {
+                if let Some(c) = cover {
+                    let mut file = BufWriter::new(File::create(&cover_path).unwrap());
+                    file.write_all(c.data).unwrap();
                 }
             }
 
-            let cover = if album_cover_path.is_file() {
-                album_cover_path.to_string_lossy().into_owned()
+            let path = if cover_path.is_file() {
+                cover_path.to_string_lossy().into_owned()
             } else {
                 String::new()
             };
 
-            let sorted_album =
-                sorted_albums
-                    .entry(album_name.clone())
-                    .or_insert_with(|| SortedAlbum {
+            let album = match albums.iter_mut().find(|x| x.name == album_name) {
+                Some(a) => a,
+                None => {
+                    let album = Album {
+                        name: album_name,
                         artist: artist.clone(),
-                        cover: cover.clone(),
+                        cover: path,
                         year,
-                        tracks: BTreeMap::new(),
-                    });
+                        tracks: vec![],
+                    };
 
-            let disc_number = x.disc_number().unwrap_or(1);
-            let mut track_number = x
-                .track_number()
-                .unwrap_or((sorted_album.tracks.len() + 1) as u16);
+                    albums.push(album.clone());
 
-            for track in &sorted_album.tracks {
-                if track.0.disc_number == disc_number && track.0.track_number == track_number {
-                    track_number = sorted_album.tracks.len() as u16;
+                    albums.iter_mut().find(|y| y.name == album.name).unwrap()
                 }
-            }
+            };
 
-            let track_key = TrackKey {
+            let track_album = TrackAlbum {
+                cover: album.cover.clone(),
+            };
+
+            let mut track_key = TrackKey {
                 disc_number,
                 track_number,
             };
 
-            let key = if disc_number > 1 {
-                format!("{}-{:02}", disc_number, track_number)
+            if let Some(_) = album.tracks.iter().find(|x| x.key == track_key) {
+                track_key.track_number = album.tracks.len() as u16;
+            }
+
+            let track = if track_key.disc_number == 1 {
+                format!("{:02}", track_key.track_number)
             } else {
-                format!("{:02}", track_number)
+                format!("{}-{:02}", track_key.disc_number, track_key.track_number)
             };
 
-            let album = Album {
-                name: album_name.clone(),
-                artist: artist.clone(),
-                cover,
-                year,
-                tracks: Vec::new(),
-            };
+            if duration == 0 {
+                if let Ok(d) = Probe::open(entry.path().clone()).unwrap().read() {
+                    duration = d.properties().duration().as_secs();
+                }
+            }
 
             let track = Track {
-                track: key,
+                key: track_key,
+                track,
                 title,
-                artist,
                 path: entry.path().to_path_buf(),
-                duration,
-                album,
+                artist,
+                track_album,
+                duration: duration as u64,
             };
 
-            sorted_album.tracks.insert(track_key, track);
+            album.tracks.push(track);
 
             continue;
         }
 
-        // without id3
-        // way more basic information, fallback method
-        let name = extract_filename(file_name).unwrap_or(file_name);
+        let mut duration: u64 = 0;
 
-        let title = name.to_string();
-        let artist = "Unknown Artist".to_string();
-        let album_name = name.to_string();
-
-        let duration = probe.properties().duration().as_secs();
-
-        let album = Album {
-            name: album_name.clone(),
-            artist: artist.clone(),
-            cover: String::new(),
-            year: 0,
-            tracks: Vec::new(),
-        };
-
-        let sorted_album = sorted_albums
-            .entry(album_name.clone())
-            .or_insert_with(|| SortedAlbum {
-                artist: artist.clone(),
-                cover: String::new(),
-                year: 0,
-                tracks: BTreeMap::new(),
-            });
+        if let Ok(d) = Probe::open(entry.path().clone()).unwrap().read() {
+            duration = d.properties().duration().as_secs();
+        }
 
         let track = Track {
+            key: TrackKey {
+                disc_number: 1,
+                track_number: 1,
+            },
             track: "".to_string(),
-            title,
-            artist,
+            title: name.to_string(),
             path: entry.path().to_path_buf(),
+            artist: "Unknown Artist".to_string(),
+            track_album: TrackAlbum {
+                cover: "".to_string(),
+            },
             duration,
-            album,
         };
 
-        let track_key = TrackKey {
-            disc_number: 1,
-            track_number: 1,
+        let single = Album {
+            name: name.to_string(),
+            artist: "Unknown Artist".to_string(),
+            cover: "".to_string(),
+            year: 0,
+            tracks: vec![track],
         };
 
-        sorted_album.tracks.insert(track_key, track);
+        albums.push(single);
     }
 
-    let payload_albums: Vec<Album> = sorted_albums
-        .into_iter()
-        .map(|(album_name, sorted_album)| Album {
-            name: album_name,
-            artist: sorted_album.artist,
-            cover: sorted_album.cover,
-            tracks: sorted_album
-                .tracks
-                .into_iter()
-                .map(|(_, track)| track)
-                .collect(),
-            year: sorted_album.year,
-        })
-        .collect();
+    for album in &mut albums {
+        album.tracks.sort_by(|a, b| a.key.cmp(&b.key));
 
-    Payload {
-        albums: payload_albums,
+        // hack: this works, because album.artist is the first track the algo finds
+        // so it's technically ensuring that *all* artists are equal.
+        if !album.tracks.iter().all(|x| x.artist == album.artist) {
+            album.artist = "Various Artists".to_string();
+        }
     }
+
+    Payload { albums }
 }

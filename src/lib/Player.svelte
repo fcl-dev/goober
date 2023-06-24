@@ -117,7 +117,6 @@
 		}
 
 		$player.tracks = allTracks;
-		console.log(allTracks.length, $player.tracks.length);
 		albums = parsedAlbums;
 	});
 
@@ -144,8 +143,11 @@
 			class="flex flex-1 justify-center items-center border-r-2 border-gray-600"
 			on:click={$player.playing ? player.pause : player.resume}
 		>
-			{#if $player.currentTrack?.album.cover !== ''}
-				<img src={convertFileSrc($player.currentTrack?.album.cover || '')} class="h-full w-full" />
+			{#if $player.currentTrack?.trackAlbum.cover !== ''}
+				<img
+					src={convertFileSrc($player.currentTrack?.trackAlbum.cover || '')}
+					class="h-full w-full"
+				/>
 			{/if}
 		</div>
 

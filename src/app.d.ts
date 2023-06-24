@@ -8,9 +8,14 @@ declare global {
 		// interface Platform {}
 	}
 	namespace Goober {
+		/// Different to Album. TrackAlbum is short, only for playback.
+		type TrackAlbum = {
+			cover: string;
+		};
+
 		type Track = {
 			track: string;
-			album: Album;
+			trackAlbum: TrackAlbum;
 			artist: string;
 			duration: number;
 			path: string;

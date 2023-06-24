@@ -22,12 +22,8 @@ export function Player() {
 	let player: Player = {
 		currentTrack: {
 			track: '',
-			album: {
-				name: 'goober',
-				artist: 'goober',
-				cover: '',
-				year: 0,
-				tracks: []
+			trackAlbum: {
+				cover: ''
 			},
 
 			artist: 'goober',
@@ -62,7 +58,8 @@ export function Player() {
 		},
 		async play(track: Goober.Track) {
 			invoke('play', {
-				path: track.path
+				path: track.path,
+				volume: player.volume / 100
 			});
 
 			methods.tryClearInterval();
@@ -209,7 +206,6 @@ export function Player() {
 			methods.default();
 
 			announce();
-			console.log(player.tracks.length);
 
 			await invoke('set_presence', {
 				presence: {
@@ -230,12 +226,8 @@ export function Player() {
 			player = {
 				currentTrack: {
 					track: '',
-					album: {
-						name: 'goober',
-						artist: 'goober',
-						cover: '',
-						year: 0,
-						tracks: []
+					trackAlbum: {
+						cover: ''
 					},
 
 					artist: 'goober',

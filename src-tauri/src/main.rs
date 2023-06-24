@@ -20,14 +20,14 @@ pub(crate) struct PlaybackState {
     #[serde(skip_serializing)]
     stream: OutputStreamHandle,
     #[serde(skip_serializing)]
-    sinks: Vec<Sink>,
+    sink: Sink,
 }
 
 impl PlaybackState {
     pub fn new(stream: OutputStreamHandle) -> Self {
         Self {
             stream,
-            sinks: vec![],
+            sink: Sink::new_idle().0,
         }
     }
 }
@@ -40,18 +40,23 @@ struct Presence {
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
-async fn play(path: &str, playback_mutex: State<'_, Mutex<PlaybackState>>) -> Result<(), ()> {
+async fn play(
+    path: &str,
+    volume: f32,
+    playback_mutex: State<'_, Mutex<PlaybackState>>,
+) -> Result<(), ()> {
     let mut state = playback_mutex.lock().unwrap();
-    let sink = Sink::try_new(&state.stream).unwrap();
 
-    if !sink.is_paused() {
-        state.sinks.clear();
-    }
+    let sink = Sink::try_new(&state.stream).unwrap();
+    sink.set_volume(volume);
+
+    state.sink.clear();
 
     let file = BufReader::new(File::open(path).unwrap());
     let source = Decoder::new(file).unwrap();
     sink.append(source);
-    state.sinks.push(sink);
+
+    state.sink = sink;
 
     Ok(())
 }
@@ -59,7 +64,9 @@ async fn play(path: &str, playback_mutex: State<'_, Mutex<PlaybackState>>) -> Re
 #[tauri::command]
 async fn stop(playback_mutex: State<'_, Mutex<PlaybackState>>) -> Result<(), ()> {
     let mut state = playback_mutex.lock().unwrap();
-    state.sinks.clear();
+
+    state.sink.clear();
+
     Ok(())
 }
 
@@ -67,9 +74,7 @@ async fn stop(playback_mutex: State<'_, Mutex<PlaybackState>>) -> Result<(), ()>
 async fn pause(playback_mutex: State<'_, Mutex<PlaybackState>>) -> Result<(), ()> {
     let state = playback_mutex.lock().unwrap();
 
-    for sink in &state.sinks {
-        sink.pause();
-    }
+    state.sink.pause();
 
     Ok(())
 }
@@ -78,9 +83,7 @@ async fn pause(playback_mutex: State<'_, Mutex<PlaybackState>>) -> Result<(), ()
 async fn resume(playback_mutex: State<'_, Mutex<PlaybackState>>) -> Result<(), ()> {
     let state = playback_mutex.lock().unwrap();
 
-    for sink in &state.sinks {
-        sink.play();
-    }
+    state.sink.play();
 
     Ok(())
 }
@@ -89,9 +92,7 @@ async fn resume(playback_mutex: State<'_, Mutex<PlaybackState>>) -> Result<(), (
 async fn volume(playback_mutex: State<'_, Mutex<PlaybackState>>, volume: f32) -> Result<(), ()> {
     let state = playback_mutex.lock().unwrap();
 
-    for sink in &state.sinks {
-        sink.set_volume(volume);
-    }
+    state.sink.set_volume(volume);
 
     Ok(())
 }
@@ -138,6 +139,7 @@ fn main() {
             discord_ipc_client
                 .set_activity(Activity::new().state("Browsing").details("Yes"))
                 .unwrap();
+
             app.manage(discord_ipc_client);
 
             Ok(())

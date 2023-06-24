@@ -63,7 +63,7 @@ async fn play(
 
 #[tauri::command]
 async fn stop(playback_mutex: State<'_, Mutex<PlaybackState>>) -> Result<(), ()> {
-    let mut state = playback_mutex.lock().unwrap();
+    let state = playback_mutex.lock().unwrap();
 
     state.sink.clear();
 

@@ -154,7 +154,7 @@ pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
                 track_key.track_number = album.tracks.len() as u16;
             }
 
-            let track = if track_key.disc_number == 1 {
+            let track = if track_key.disc_number == 0 || track_key.disc_number == 1 {
                 format!("{:02}", track_key.track_number)
             } else {
                 format!("{}-{:02}", track_key.disc_number, track_key.track_number)

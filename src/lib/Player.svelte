@@ -195,7 +195,6 @@
 		}
 	) {
 		let value = (<HTMLInputElement>e.target).value;
-		console.log(value);
 
 		switch (value) {
 			case 'Year': {
@@ -204,13 +203,11 @@
 			}
 			case 'Artist (A-Z)': {
 				sortBy(Sorting.ByArist);
-				console.log(value);
 
 				break;
 			}
 			case 'Album name (A-Z)': {
 				sortBy(Sorting.ByAlbumName);
-				console.log(value);
 
 				break;
 			}

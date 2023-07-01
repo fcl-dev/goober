@@ -33,7 +33,6 @@
 		// thanks, javascript!
 		let i = allTracks.findIndex((t) => _.isEqual(t, track));
 
-		console.log(i);
 		$player.i = i;
 		$player.element = target!;
 

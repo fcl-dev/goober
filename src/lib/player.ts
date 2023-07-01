@@ -157,11 +157,9 @@ export function Player() {
 		},
 
 		async playNext() {
-			console.log(player.currentTrack);
 			if (!player.shuffling) {
 				player.i++;
 				player.currentTrack = player.tracks[player.i];
-				console.log(player.currentTrack, player.i, player.i - 1);
 
 				player.element?.classList.remove('text-blue-400');
 
@@ -183,7 +181,6 @@ export function Player() {
 				methods.play(player.currentTrack);
 
 				announce();
-				console.log('playing', player.i);
 
 				return;
 			}
@@ -202,8 +199,6 @@ export function Player() {
 
 			methods.play(player.currentTrack);
 			announce();
-
-			console.log('playing', player.i);
 		},
 		async stop() {
 			methods.tryClearInterval();

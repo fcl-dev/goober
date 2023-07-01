@@ -2,12 +2,15 @@
 	import Album from './Album.svelte';
 	import Controls from './Controls.svelte';
 	import { listen } from '@tauri-apps/api/event';
-	import { convertFileSrc, invoke } from '@tauri-apps/api/tauri';
+	import { convertFileSrc } from '@tauri-apps/api/tauri';
 	import { Player } from './player';
 	import { onMount } from 'svelte';
+	import CreatePlaylistModal from './CreatePlaylistModal.svelte';
+	import AddTracksModal from './AddTracksModal.svelte';
+	import DeletePlaylistModal from './DeletePlaylistModal.svelte';
+	import EmptyPlaylistModal from './EmptyPlaylistModal.svelte';
 
 	let player = Player();
-	let allTracks: Goober.Track[] = [];
 
 	function progressBar(event: MouseEvent) {
 		const progressBar = event.target as HTMLElement;
@@ -17,11 +20,15 @@
 	}
 
 	const onKeyDown = (e: KeyboardEvent) => {
-		if (e.code === 'Space' && $player.playing) {
+		if (e.code !== 'Space') return;
+
+		if ($player.playing) {
 			player.pause();
-		} else if (e.code === 'Space' && $player.paused) {
-			player.resume();
+
+			return;
 		}
+
+		player.resume();
 	};
 
 	enum Sorting {
@@ -30,43 +37,91 @@
 		ByAlbumName
 	}
 
+	let sortingMethod = 'Year';
+
 	function sortBy(by: Sorting) {
 		switch (by) {
 			case Sorting.ByYear: {
-				albums.sort((a, b) => (a.year > b.year ? 1 : -1));
-				albums = albums;
+				sortingMethod = 'Year';
 
-				allTracks = albums.flatMap((album) => album.tracks);
+				currentPlaylist.content.sort((a, b) => (a.year > b.year ? 1 : -1));
+				currentPlaylist = currentPlaylist;
+
+				tracks = currentPlaylist.content.flatMap((album) => album.tracks);
 				break;
 			}
 			case Sorting.ByArist: {
-				albums.sort((a, b) => (a.artist > b.artist ? 1 : -1));
-				albums = albums;
+				sortingMethod = 'Artist (A-Z)';
 
-				allTracks = albums.flatMap((album) => album.tracks);
+				currentPlaylist.content.sort((a, b) => (a.artist > b.artist ? 1 : -1));
+				currentPlaylist = currentPlaylist;
+
+				tracks = currentPlaylist.content.flatMap((album) => album.tracks);
 				break;
 			}
 			case Sorting.ByAlbumName: {
-				albums.sort((a, b) => (a.name > b.name ? 1 : -1));
-				albums = albums;
+				sortingMethod = 'Album name (A-Z)';
 
-				allTracks = albums.flatMap((album) => album.tracks);
+				currentPlaylist.content.sort((a, b) => (a.name > b.name ? 1 : -1));
+				currentPlaylist = currentPlaylist;
+
+				tracks = currentPlaylist.content.flatMap((album) => album.tracks);
 				break;
 			}
 		}
 	}
 
-	let albums: Goober.Album[] = [];
+	/**
+	 * All tracks in the current `Playlist`
+	 */
+	let tracks: Goober.Track[] = [];
+
+	/**
+	 * The music library.
+	 */
+	let library: Goober.Album[] = [];
+
+	/**
+	 * All playlists.
+	 */
+	let playlists: Goober.Playlist[] = [];
+
+	/**
+	 * The current loaded playlist.
+	 */
+	let currentPlaylist: Goober.Playlist = {
+		name: '<all>',
+		content: [],
+		selected: true,
+		cover: ''
+	};
 
 	listen('music', (event) => {
-		albums = (event.payload as Goober.Payload).albums;
+		library = (event.payload as Goober.Payload).library;
+
+		$player.tracks = tracks;
+
+		localStorage.setItem('library', JSON.stringify(library));
+
+		if (playlists[0]) {
+			playlists[0].content = library;
+		} else {
+			let allPlaylist: Goober.Playlist = {
+				name: '<all>',
+				content: library,
+				selected: true,
+				cover: ''
+			};
+
+			playlists.push(allPlaylist);
+			playlists = playlists;
+
+			currentPlaylist = allPlaylist;
+		}
 
 		sortBy(Sorting.ByYear);
 
-		$player.tracks = allTracks;
-
-		localStorage.clear();
-		localStorage.setItem('albums', JSON.stringify(albums));
+		localStorage.setItem('playlists', JSON.stringify(playlists));
 	});
 
 	type Time = {
@@ -95,6 +150,73 @@
 		return `${h.padStart(2, '0')}:${m.padStart(2, '0')}:${s.padStart(2, '0')}`;
 	}
 
+	function selectPlaylist(
+		e: Event & {
+			currentTarget: EventTarget & HTMLSelectElement;
+		}
+	) {
+		if (!e.target) return;
+
+		let selectedPlaylist = playlists.find((p) => p.selected);
+		let chosenPlaylist = playlists.find((p) => p.name === (<HTMLInputElement>e.target).value)!;
+
+		if (!selectedPlaylist) return;
+
+		currentPlaylist = chosenPlaylist;
+
+		tracks = chosenPlaylist.content.flatMap((a) => a.tracks);
+
+		$player.tracks = tracks;
+		$player.i = -1;
+
+		const storagePlaylists = localStorage.getItem('playlists');
+
+		if (!storagePlaylists) return;
+
+		const parsedPlaylists: Goober.Playlist[] = JSON.parse(storagePlaylists);
+
+		selectedPlaylist.selected = false;
+		chosenPlaylist.selected = true;
+
+		// what the fuck? why do I need to assert?
+		let selectedIndex = parsedPlaylists.findIndex((p) => p.name === selectedPlaylist!.name);
+		let chosenIndex = parsedPlaylists.findIndex((p) => p.name === chosenPlaylist.name);
+
+		parsedPlaylists[selectedIndex].selected = false;
+
+		parsedPlaylists[chosenIndex].selected = true;
+
+		localStorage.setItem('playlists', JSON.stringify(parsedPlaylists));
+	}
+
+	function selectSorting(
+		e: Event & {
+			currentTarget: EventTarget & HTMLSelectElement;
+		}
+	) {
+		let value = (<HTMLInputElement>e.target).value;
+		console.log(value);
+
+		switch (value) {
+			case 'Year': {
+				sortBy(Sorting.ByYear);
+				break;
+			}
+			case 'Artist (A-Z)': {
+				sortBy(Sorting.ByArist);
+				console.log(value);
+
+				break;
+			}
+			case 'Album name (A-Z)': {
+				sortBy(Sorting.ByAlbumName);
+				console.log(value);
+
+				break;
+			}
+		}
+	}
+
 	let elapsed = toTime($player.elapsed);
 	let formattedElapsed = formatTime(elapsed);
 
@@ -106,18 +228,27 @@
 	onMount(() => {
 		document.addEventListener('contextmenu', (event) => event.preventDefault());
 
-		let storageAlbums = localStorage.getItem('albums');
+		let storageLibrary = localStorage.getItem('library');
+		let storagePlaylists = localStorage.getItem('playlists');
 
-		if (!storageAlbums) return;
+		if (!storageLibrary || !storagePlaylists) return;
 
-		let parsedAlbums = JSON.parse(storageAlbums);
+		let parsedLibrary: Goober.Album[] = JSON.parse(storageLibrary);
+		let parsedPlaylists: Goober.Playlist[] = JSON.parse(storagePlaylists);
 
-		for (let album of parsedAlbums) {
-			allTracks.push(...album.tracks);
+		// if the playlists exist in localstorage there should in theory be a selected playlist
+		// hence `!`
+		currentPlaylist = parsedPlaylists.find((p) => p.selected == true)!;
+
+		for (let album of currentPlaylist.content) {
+			tracks.push(...album.tracks);
 		}
 
-		$player.tracks = allTracks;
-		albums = parsedAlbums;
+		library = parsedLibrary;
+
+		$player.tracks = tracks;
+
+		playlists = parsedPlaylists;
 	});
 
 	$: {
@@ -153,28 +284,60 @@
 
 		<div class="flex-1 max-h-full overflow-auto gap-1">
 			<div class="border-b-2 border-b-gray-500 mb-1 mt-2">
-				<input
+				<!---- <input
 					type="text"
 					placeholder="Search"
 					class="input input-bordered w-full max-w-xs ml-1 mb-2"
-				/>
-				<div class="dropdown">
-					<label tabindex="0" class="btn m-1">Sort by:</label>
-					<ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
-						<li on:click={() => sortBy(Sorting.ByYear)}><a>Year</a></li>
-						<li>
-							<a on:click={() => sortBy(Sorting.ByArist)}>Artist (A-Z)</a>
-						</li>
-						<li on:click={() => sortBy(Sorting.ByAlbumName)}>
-							<a>Album Name</a>
-						</li>
-					</ul>
-				</div>
+				/>-->
+				<select
+					class="select select-bordered max-w-xs w-1/3"
+					on:change={selectSorting}
+					bind:value={sortingMethod}
+				>
+					<option disabled selected>Sort by</option>
+					<option>Year</option>
+					<option>Artist (A-Z)</option>
+					<option>Album name (A-Z)</option>
+				</select>
+
+				<select
+					class="select select-bordered w-1/3 max-w-xs"
+					on:change={selectPlaylist}
+					bind:value={currentPlaylist.name}
+				>
+					<option disabled selected>Select playlist</option>
+					{#each playlists as playlist}
+						<option>{playlist.name}</option>
+					{/each}
+				</select>
+
+				<CreatePlaylistModal bind:playlists />
+				{#if currentPlaylist.name !== '<all>'}
+					<AddTracksModal
+						playlistName={currentPlaylist.name}
+						bind:allPlaylist={playlists[0]}
+						bind:tracks
+						bind:currentPlaylist
+						bind:player
+					/>
+					<EmptyPlaylistModal
+						playlistName={currentPlaylist.name}
+						bind:playlists
+						bind:currentPlaylist
+					/>
+					<DeletePlaylistModal
+						playlistName={currentPlaylist.name}
+						bind:tracks
+						bind:currentPlaylist
+						bind:player
+						bind:playlists
+					/>
+				{/if}
 			</div>
 
 			<div class="flex flex-col gap-y-1.5">
-				{#each albums as album}
-					<Album {album} bind:player bind:allTracks />
+				{#each currentPlaylist.content as album}
+					<Album {album} bind:player bind:allTracks={tracks} bind:currentPlaylist />
 				{/each}
 			</div>
 		</div>

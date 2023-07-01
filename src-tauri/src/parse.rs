@@ -56,7 +56,7 @@ fn extract_filename(file_path: &str) -> Option<&str> {
 
 #[derive(Clone, serde::Serialize)]
 pub struct Payload {
-    albums: Vec<Album>,
+    library: Vec<Album>,
 }
 
 // shoutout to u#5987669 in stackoverflow, this is way easier and more intuitive to use!
@@ -137,7 +137,7 @@ pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
 
                     albums.push(album.clone());
 
-                    albums.iter_mut().find(|y| y.name == album.name).unwrap()
+                    albums.iter_mut().find(|a| a.name == album.name).unwrap()
                 }
             };
 
@@ -223,5 +223,5 @@ pub fn parse_folder(p: PathBuf, app: AppHandle) -> Payload {
         }
     }
 
-    Payload { albums }
+    Payload { library: albums }
 }

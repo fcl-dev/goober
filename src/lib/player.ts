@@ -57,7 +57,7 @@ export function Player() {
 			announce();
 		},
 		async play(track: Goober.Track) {
-			invoke('play', {
+			await invoke('play', {
 				path: track.path,
 				volume: player.volume
 			});
@@ -157,9 +157,11 @@ export function Player() {
 		},
 
 		async playNext() {
+			console.log(player.currentTrack);
 			if (!player.shuffling) {
 				player.i++;
 				player.currentTrack = player.tracks[player.i];
+				console.log(player.currentTrack, player.i, player.i - 1);
 
 				player.element?.classList.remove('text-blue-400');
 
@@ -181,6 +183,8 @@ export function Player() {
 				methods.play(player.currentTrack);
 
 				announce();
+				console.log('playing', player.i);
+
 				return;
 			}
 
@@ -198,6 +202,8 @@ export function Player() {
 
 			methods.play(player.currentTrack);
 			announce();
+
+			console.log('playing', player.i);
 		},
 		async stop() {
 			methods.tryClearInterval();
@@ -206,16 +212,16 @@ export function Player() {
 
 			await invoke('stop');
 
-			methods.default();
-
-			announce();
-
 			await invoke('set_presence', {
 				presence: {
 					state: 'Browsing',
 					details: `${player.tracks.length} tracks loaded`
 				}
 			});
+
+			methods.default();
+
+			announce();
 		},
 		async updateElement(element: HTMLElement) {
 			if (player.element) player.element.classList.remove('text-blue-400');

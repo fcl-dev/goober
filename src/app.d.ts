@@ -13,6 +13,13 @@ declare global {
 			cover: string;
 		};
 
+		type Playlist = {
+			name: string;
+			selected: boolean;
+			content: Goober.Album[];
+			cover: string;
+		};
+
 		type Track = {
 			track: string;
 			trackAlbum: TrackAlbum;
@@ -31,7 +38,7 @@ declare global {
 		};
 
 		type Payload = {
-			albums: Album[];
+			library: Album[];
 		};
 	}
 }

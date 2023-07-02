@@ -310,6 +310,8 @@
 
 				<CreatePlaylistModal bind:playlists />
 				{#if currentPlaylist.name !== '<all>'}
+					<!--playlistName is included in all of those so it's easier to just set currentPlayer and
+					not worry about currentPlaylist.name changing. :)-->
 					<AddTracksModal
 						playlistName={currentPlaylist.name}
 						bind:allPlaylist={playlists[0]}

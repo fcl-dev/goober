@@ -16,10 +16,13 @@ goober is a music player, written in Svelte and Rust. It's currently in the pre-
 
 MP3, WAV, Vorbis, FLAC
 
-### Why does goober take longer amounts of time to scan bigger folders?
+### ~~Why does goober take longer amounts of time to scan bigger folders?~~
 
-The algorithm goober uses stores album covers in AppData (differs in non-Windows platforms),
-and that itself takes some time. goober is constantly being improved in newer versions.
+~~The algorithm goober uses stores album covers in AppData (differs in non-Windows platforms),
+and that itself takes some time. goober is constantly being improved in newer versions.~~
+
+As of the closing of issue #1, goober's algorithm is now much faster and I wouldn't consider it slow.
+If you found a good way to improve it further, feel free to submit a PR.
 
 ### When will goober get released?
 

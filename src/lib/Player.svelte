@@ -9,6 +9,7 @@
 	import AddTracksModal from './AddTracksModal.svelte';
 	import DeletePlaylistModal from './DeletePlaylistModal.svelte';
 	import EmptyPlaylistModal from './EmptyPlaylistModal.svelte';
+	import { register } from '@tauri-apps/api/globalShortcut';
 
 	/**
 	 * All tracks in the current `Playlist`
@@ -197,6 +198,16 @@
 		localStorage.setItem('playlists', JSON.stringify(parsedPlaylists));
 	}
 
+	async function setShortcuts() {
+		await register('CommandOrControl+Shift+ArrowLeft', async () => {
+			await player.playPrevious();
+		});
+
+		await register('CommandOrControl+Shift+ArrowRight', async () => {
+			await player.playNext();
+		});
+	}
+
 	function selectSorting(
 		e: Event & {
 			currentTarget: EventTarget & HTMLSelectElement;
@@ -255,6 +266,8 @@
 		$player.tracks = tracks;
 
 		playlists = parsedPlaylists;
+
+		await setShortcuts();
 
 		await invoke('set_presence', {
 			presence: {

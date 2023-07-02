@@ -30,7 +30,7 @@ export function Player() {
 			artist: 'goober',
 			duration: 0,
 			path: '',
-			title: 'version pre-a1.0'
+			title: 'version a1.0'
 		},
 		shuffling: false,
 		tracks: [],
@@ -239,7 +239,7 @@ export function Player() {
 					artist: 'goober',
 					duration: 0,
 					path: '',
-					title: 'version pre-a1.0'
+					title: 'version a1.0'
 				},
 				shuffling: false,
 				tracks: [],

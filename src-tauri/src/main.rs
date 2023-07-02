@@ -115,14 +115,14 @@ async fn set_presence(
 }
 
 fn main() {
-    let open_folder = CustomMenuItem::new("open_folder".to_string(), "Open Folder");
+    let open_library_folder = CustomMenuItem::new("open_folder".to_string(), "Open library folder");
     let preferences = CustomMenuItem::new("preferences".to_string(), "Preferences");
     let exit = CustomMenuItem::new("exit".to_string(), "Exit");
 
     let submenu = Submenu::new(
         "File",
         Menu::new()
-            .add_item(open_folder)
+            .add_item(open_library_folder)
             .add_item(preferences)
             .add_item(exit),
     );
@@ -137,7 +137,12 @@ fn main() {
 
             discord_ipc_client.enable();
             discord_ipc_client
-                .set_activity(Activity::new().state("Browsing").details("Yes"))
+                .set_activity(
+                    Activity::new()
+                        .state("Browsing")
+                        .assets(Assets::new().large_image("gooberlogo"))
+                        .details("Just launched"),
+                )
                 .unwrap();
 
             app.manage(discord_ipc_client);

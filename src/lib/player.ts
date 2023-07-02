@@ -4,6 +4,7 @@ import { setInterval, clearInterval } from 'worker-timers';
 export type Player = {
 	currentTrack?: Goober.Track;
 	tracks: Goober.Track[];
+	library: Goober.Album[];
 	i: number;
 	playing: boolean;
 	paused: boolean;
@@ -33,6 +34,7 @@ export function Player() {
 		},
 		shuffling: false,
 		tracks: [],
+		library: [],
 		i: 0,
 		volume: 1,
 		playing: false,
@@ -210,7 +212,7 @@ export function Player() {
 			await invoke('set_presence', {
 				presence: {
 					state: 'Browsing',
-					details: `${player.tracks.length} tracks loaded`
+					details: `${player.library.reduce((acc, e) => acc + e.tracks.length, 0)} tracks loaded`
 				}
 			});
 
@@ -241,6 +243,7 @@ export function Player() {
 				},
 				shuffling: false,
 				tracks: [],
+				library: [],
 				i: 0,
 				volume: player.volume,
 				playing: false,

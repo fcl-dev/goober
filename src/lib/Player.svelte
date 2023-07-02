@@ -2,13 +2,38 @@
 	import Album from './Album.svelte';
 	import Controls from './Controls.svelte';
 	import { listen } from '@tauri-apps/api/event';
-	import { convertFileSrc } from '@tauri-apps/api/tauri';
+	import { convertFileSrc, invoke } from '@tauri-apps/api/tauri';
 	import { Player } from './player';
 	import { onMount } from 'svelte';
 	import CreatePlaylistModal from './CreatePlaylistModal.svelte';
 	import AddTracksModal from './AddTracksModal.svelte';
 	import DeletePlaylistModal from './DeletePlaylistModal.svelte';
 	import EmptyPlaylistModal from './EmptyPlaylistModal.svelte';
+
+	/**
+	 * All tracks in the current `Playlist`
+	 */
+	let tracks: Goober.Track[] = [];
+
+	/**
+	 * The music library.
+	 */
+	let library: Goober.Album[] = [];
+
+	/**
+	 * All playlists.
+	 */
+	let playlists: Goober.Playlist[] = [];
+
+	/**
+	 * The current loaded playlist.
+	 */
+	let currentPlaylist: Goober.Playlist = {
+		name: '<all>',
+		content: [],
+		selected: true,
+		cover: ''
+	};
 
 	let player = Player();
 
@@ -71,34 +96,10 @@
 		}
 	}
 
-	/**
-	 * All tracks in the current `Playlist`
-	 */
-	let tracks: Goober.Track[] = [];
-
-	/**
-	 * The music library.
-	 */
-	let library: Goober.Album[] = [];
-
-	/**
-	 * All playlists.
-	 */
-	let playlists: Goober.Playlist[] = [];
-
-	/**
-	 * The current loaded playlist.
-	 */
-	let currentPlaylist: Goober.Playlist = {
-		name: '<all>',
-		content: [],
-		selected: true,
-		cover: ''
-	};
-
-	listen('music', (event) => {
+	listen('music', async (event) => {
 		library = (event.payload as Goober.Payload).library;
 
+		$player.library = library;
 		$player.tracks = tracks;
 
 		localStorage.setItem('library', JSON.stringify(library));
@@ -122,6 +123,13 @@
 		sortBy(Sorting.ByYear);
 
 		localStorage.setItem('playlists', JSON.stringify(playlists));
+
+		await invoke('set_presence', {
+			presence: {
+				state: 'Browsing',
+				details: `${library.reduce((acc, e) => acc + e.tracks.length, 0)} tracks loaded`
+			}
+		});
 	});
 
 	type Time = {
@@ -222,7 +230,7 @@
 
 	let progress = '0';
 
-	onMount(() => {
+	onMount(async () => {
 		document.addEventListener('contextmenu', (event) => event.preventDefault());
 
 		let storageLibrary = localStorage.getItem('library');
@@ -243,9 +251,17 @@
 
 		library = parsedLibrary;
 
+		$player.library = library;
 		$player.tracks = tracks;
 
 		playlists = parsedPlaylists;
+
+		await invoke('set_presence', {
+			presence: {
+				state: 'Browsing',
+				details: `${library.reduce((acc, e) => acc + e.tracks.length, 0)} tracks loaded`
+			}
+		});
 	});
 
 	$: {

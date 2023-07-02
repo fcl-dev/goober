@@ -1,11 +1,9 @@
-name: 'publish'
 on:
-  push:
-    branches:
-      - release
+  release:
+    types: [created]
 
 jobs:
-  publish-tauri:
+  release:
     permissions:
       contents: write
     strategy:

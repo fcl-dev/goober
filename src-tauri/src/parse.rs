@@ -6,9 +6,9 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use audiotags::{MimeType, Picture, Tag};
+use audiotags::Tag;
 use jwalk::WalkDir;
-use lofty::{read_from_path, AudioFile, ParseOptions, Probe, TaggedFileExt};
+use lofty::{AudioFile, Probe};
 use sanitize_filename::sanitize;
 use tauri::AppHandle;
 

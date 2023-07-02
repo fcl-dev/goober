@@ -3,10 +3,10 @@
 	import type { Player } from './player';
 
 	export let playlistName: string;
-	export let player: ReturnType<typeof Player>;
 	export let tracks: Goober.Track[];
 	export let currentPlaylist: Goober.Playlist;
 	export let playlists: Goober.Playlist[];
+	export let player: ReturnType<typeof Player>;
 
 	function openDeleteModal() {
 		const deleteModal = <HTMLFormElement>document.querySelector('#delete_modal');

@@ -138,7 +138,7 @@ export function Player() {
 			player.element?.classList.remove('text-blue-400');
 
 			const elements = [
-				...(document.getElementsByClassName('track') as HTMLCollectionOf<HTMLElement>)
+				...(<HTMLCollectionOf<HTMLElement>>document.getElementsByClassName('track'))
 			];
 
 			const previousElement = elements[player.i];
@@ -166,7 +166,7 @@ export function Player() {
 				player.element?.classList.remove('text-blue-400');
 
 				const elements = [
-					...(document.getElementsByClassName('track') as HTMLCollectionOf<HTMLElement>)
+					...(<HTMLCollectionOf<HTMLElement>>document.getElementsByClassName('track'))
 				];
 
 				const nextElement = elements[player.i];
@@ -193,7 +193,7 @@ export function Player() {
 			player.element?.classList.remove('text-blue-400');
 
 			const elements = [
-				...(document.getElementsByClassName('track') as HTMLCollectionOf<HTMLElement>)
+				...(<HTMLCollectionOf<HTMLElement>>document.getElementsByClassName('track'))
 			];
 
 			const nextElement = elements[player.i];

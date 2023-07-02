@@ -1,9 +1,11 @@
 <script lang="ts">
 	import FaEraser from 'svelte-icons/fa/FaEraser.svelte';
+	import type { Player } from './player';
 
 	export let playlistName: string;
 	export let playlists: Goober.Playlist[];
 	export let currentPlaylist: Goober.Playlist;
+	export let player: ReturnType<typeof Player>;
 
 	function openEmptyModal() {
 		const emptyModal = <HTMLFormElement>document.querySelector('#empty_modal');
@@ -16,6 +18,9 @@
 
 		currentPlaylist.content[0].tracks = [];
 		playlists[currentIndex].content[0].tracks = [];
+
+		$player.tracks = [];
+		$player.i = -1;
 
 		localStorage.setItem('playlists', JSON.stringify(playlists));
 	}

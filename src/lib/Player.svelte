@@ -339,13 +339,14 @@
 						playlistName={currentPlaylist.name}
 						bind:playlists
 						bind:currentPlaylist
+						bind:player
 					/>
 					<DeletePlaylistModal
 						playlistName={currentPlaylist.name}
 						bind:tracks
 						bind:currentPlaylist
-						bind:player
 						bind:playlists
+						bind:player
 					/>
 				{/if}
 			</div>

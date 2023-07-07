@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { convertFileSrc } from '@tauri-apps/api/tauri';
 	import type { Player } from './player';
-	import _ from 'lodash';
 
 	export let player: ReturnType<typeof Player>;
 	export let album: Goober.Album;
@@ -31,7 +30,7 @@
 		// ({"x": "y"}) === ({"x": "y"}) // false
 		// ({"x": "y"}) == ({"x": "y"}) // false
 		// thanks, javascript!
-		let i = allTracks.findIndex((t) => _.isEqual(t, track));
+		let i = allTracks.findIndex((t) => JSON.stringify(t) === JSON.stringify(track));
 
 		$player.i = i;
 		$player.element = target!;

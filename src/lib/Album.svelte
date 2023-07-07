@@ -21,11 +21,13 @@
 
 	async function playTrack(track: Goober.Track, event: MouseEvent) {
 		const targetHTML = event.target as HTMLElement;
-		const target = targetHTML.children.length > 0 ? targetHTML : targetHTML.parentElement;
+		const target = <HTMLElement>(
+			(targetHTML.children.length > 0 ? targetHTML : targetHTML.parentElement)
+		);
 
 		player.tryClearInterval();
 
-		player.updateElement(target!);
+		player.updateElement(target);
 
 		// ({"x": "y"}) === ({"x": "y"}) // false
 		// ({"x": "y"}) == ({"x": "y"}) // false
@@ -33,7 +35,7 @@
 		let i = allTracks.findIndex((t) => JSON.stringify(t) === JSON.stringify(track));
 
 		$player.i = i;
-		$player.element = target!;
+		$player.element = target;
 
 		// TODO: maybe find a better way to do this?
 		// this ensures that every single time you play the track

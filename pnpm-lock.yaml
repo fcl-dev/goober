@@ -14,7 +14,6 @@ specifiers:
   eslint: ^8.28.0
   eslint-config-prettier: ^8.5.0
   eslint-plugin-svelte: ^2.26.0
-  lodash: ^4.17.21
   postcss: ^8.4.23
   postcss-load-config: ^4.0.1
   prettier: ^2.8.0
@@ -33,7 +32,6 @@ dependencies:
   '@tauri-apps/api': 1.4.0
   '@types/lodash': 4.14.195
   daisyui: 3.1.1_postcss@8.4.24
-  lodash: 4.17.21
   svelte-icons: 2.1.0
   worker-timers: 7.0.71
 
@@ -1467,10 +1465,6 @@ packages:
   /lodash.merge/4.6.2:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
     dev: true
-
-  /lodash/4.17.21:
-    resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
-    dev: false
 
   /lru-cache/6.0.0:
     resolution: {integrity: sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==}

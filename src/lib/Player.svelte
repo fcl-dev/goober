@@ -97,7 +97,7 @@
 		}
 	}
 
-	listen('music', async (event) => {
+	listen('library', async (event) => {
 		library = (event.payload as Goober.Payload).library;
 
 		$player.library = library;

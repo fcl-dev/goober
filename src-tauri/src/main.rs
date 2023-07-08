@@ -160,7 +160,7 @@ fn main() {
                         let app_handle = event.window().app_handle();
                         let payload = parse_folder(p, app_handle);
 
-                        event.window().emit_all("music", payload).unwrap();
+                        event.window().emit_all("library", payload).unwrap();
                     }
                     _ => {}
                 })

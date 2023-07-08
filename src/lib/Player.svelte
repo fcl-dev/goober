@@ -10,6 +10,7 @@
 	import DeletePlaylistModal from './DeletePlaylistModal.svelte';
 	import EmptyPlaylistModal from './EmptyPlaylistModal.svelte';
 	import { register } from '@tauri-apps/api/globalShortcut';
+	import { appWindow } from '@tauri-apps/api/window';
 
 	/**
 	 * All tracks in the current `Playlist`
@@ -35,6 +36,11 @@
 		selected: true,
 		cover: ''
 	};
+
+	/**
+	 * The volume level that appears on the slider.
+	 */
+	let volume: number = 0;
 
 	let player = Player();
 
@@ -242,6 +248,8 @@
 	let progress = '0';
 
 	onMount(async () => {
+		await appWindow.setTitle(`goober ${PKG.version}`);
+
 		document.addEventListener('contextmenu', (event) => event.preventDefault());
 
 		let storageLibrary = localStorage.getItem('library');
@@ -266,6 +274,20 @@
 		$player.tracks = tracks;
 
 		playlists = parsedPlaylists;
+
+		// at the bottom due to it being less important
+		let storageVolume = localStorage.getItem('volume');
+
+		if (!storageVolume) {
+			storageVolume = '1';
+
+			localStorage.setItem('volume', storageVolume);
+		}
+
+		let volumeNumber = Number(storageVolume);
+
+		$player.volume = volumeNumber;
+		volume = volumeNumber * 100;
 
 		await setShortcuts();
 
@@ -309,7 +331,7 @@
 		</div>
 
 		<div class="flex-1 max-h-full overflow-auto gap-1">
-			<div class="border-b-2 border-b-gray-500 mb-1 mt-2">
+			<div class="border-b-2 border-b-gray-500 mb-1 mt-2 sticky top-0 bg-zinc-900">
 				<!---- <input
 					type="text"
 					placeholder="Search"
@@ -402,7 +424,7 @@
 				on:click={progressBar}
 			/>
 
-			<Controls bind:player />
+			<Controls bind:player bind:volume />
 		</div>
 	</div>
 </div>

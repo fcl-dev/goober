@@ -30,7 +30,7 @@ export function Player() {
 			artist: 'goober',
 			duration: 0,
 			path: '',
-			title: 'version a1.0'
+			title: `version ${PKG.version}`
 		},
 		shuffling: false,
 		tracks: [],
@@ -239,7 +239,7 @@ export function Player() {
 					artist: 'goober',
 					duration: 0,
 					path: '',
-					title: 'version a1.0'
+					title: `version ${PKG.version}`
 				},
 				shuffling: false,
 				tracks: [],

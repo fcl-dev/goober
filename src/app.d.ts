@@ -34,13 +34,18 @@ declare global {
 			artist: string;
 			cover: string;
 			year: number;
-			tracks: Array<Track>;
+			tracks: Track[];
 		};
 
 		type Payload = {
 			library: Album[];
 		};
 	}
+
+	declare const PKG: {
+		// everything else I don't need
+		version: string;
+	};
 }
 
 export {};

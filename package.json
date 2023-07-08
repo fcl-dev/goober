@@ -1,6 +1,6 @@
 {
 	"name": "goober-kit",
-	"version": "1.0.0-alpha",
+	"version": "1.1.0-alpha",
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",
@@ -16,6 +16,7 @@
 		"@sveltejs/adapter-static": "1.0.0-next.50",
 		"@sveltejs/kit": "^1.5.0",
 		"@tauri-apps/cli": "^1.4.0",
+		"@types/node": "^20.4.1",
 		"@typescript-eslint/eslint-plugin": "^5.45.0",
 		"@typescript-eslint/parser": "^5.45.0",
 		"autoprefixer": "^10.4.14",

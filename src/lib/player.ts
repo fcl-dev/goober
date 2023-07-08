@@ -102,20 +102,20 @@ export function Player() {
 			});
 		},
 		async resume() {
-			if (player.paused) {
-				player.playing = true;
-				player.paused = false;
+			if (!player.paused) return;
 
-				announce();
+			player.playing = true;
+			player.paused = false;
 
-				await invoke('resume');
-				await invoke('set_presence', {
-					presence: {
-						state: 'Playing',
-						details: `${player.currentTrack?.artist} - ${player.currentTrack?.title}`
-					}
-				});
-			}
+			announce();
+
+			await invoke('resume');
+			await invoke('set_presence', {
+				presence: {
+					state: 'Playing',
+					details: `${player.currentTrack?.artist} - ${player.currentTrack?.title}`
+				}
+			});
 		},
 		async pause() {
 			player.playing = false;

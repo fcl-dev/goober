@@ -14,12 +14,14 @@
 
 	export let player: ReturnType<typeof Player>;
 
-	let volume = 100;
+	export let volume: number;
 	let shuffling = false;
 
 	const stop = async () => await player.stop();
 
 	const play = () => {
+		if (!$player.playing && !$player.paused) return;
+
 		if ($player.paused) {
 			player.resume();
 			return;
@@ -29,10 +31,14 @@
 	};
 
 	const fastForward = async () => {
+		if (!$player.playing && !$player.paused) return;
+
 		await player.playNext();
 	};
 
 	const fastBackward = async () => {
+		if (!$player.playing && !$player.paused) return;
+
 		await player.playPrevious();
 	};
 
@@ -114,8 +120,10 @@
 				$player.volume = volume / 100;
 
 				invoke('volume', {
-					volume: volume / 100
+					volume: $player.volume
 				});
+
+				localStorage.setItem('volume', $player.volume.toString());
 			}}
 		/>
 	</div>

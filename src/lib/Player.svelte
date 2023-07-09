@@ -337,16 +337,18 @@
 					placeholder="Search"
 					class="input input-bordered w-full max-w-xs ml-1 mb-2"
 				/>-->
-				<select
-					class="select select-bordered max-w-xs w-1/3"
-					on:change={selectSorting}
-					bind:value={sortingMethod}
-				>
-					<option disabled selected>Sort by</option>
-					<option>Year</option>
-					<option>Artist (A-Z)</option>
-					<option>Album name (A-Z)</option>
-				</select>
+				{#if currentPlaylist.name === '<all>'}
+					<select
+						class="select select-bordered max-w-xs w-1/3"
+						on:change={selectSorting}
+						bind:value={sortingMethod}
+					>
+						<option disabled selected>Sort by</option>
+						<option>Year</option>
+						<option>Artist (A-Z)</option>
+						<option>Album name (A-Z)</option>
+					</select>
+				{/if}
 
 				<select
 					class="select select-bordered w-1/3 max-w-xs"

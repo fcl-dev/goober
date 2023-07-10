@@ -105,7 +105,7 @@ async fn set_presence(
     discord_ipc_client
         .set_activity(
             Activity::new()
-                .assets(Assets::new().large_image("gooberlogo"))
+                .assets(Assets::new().large_image("goober-icon"))
                 .state(&presence.state)
                 .details(&presence.details),
         )
@@ -119,14 +119,19 @@ fn main() {
     let preferences = CustomMenuItem::new("preferences".to_string(), "Preferences");
     let exit = CustomMenuItem::new("exit".to_string(), "Exit");
 
-    let submenu = Submenu::new(
+    let file = Submenu::new(
         "File",
         Menu::new()
             .add_item(open_library_folder)
             .add_item(preferences)
             .add_item(exit),
     );
-    let menu = Menu::new().add_submenu(submenu);
+
+    let about = CustomMenuItem::new("about".to_string(), "About");
+
+    let help = Submenu::new("Help", Menu::new().add_item(about));
+
+    let menu = Menu::new().add_submenu(file).add_submenu(help);
 
     let stream = OutputStream::try_default().unwrap();
 
@@ -140,7 +145,7 @@ fn main() {
                 .set_activity(
                     Activity::new()
                         .state("Browsing")
-                        .assets(Assets::new().large_image("gooberlogo"))
+                        .assets(Assets::new().large_image("goober-icon"))
                         .details("Just launched"),
                 )
                 .unwrap();
@@ -152,7 +157,7 @@ fn main() {
         .on_menu_event(|event| match event.menu_item_id() {
             "exit" => event.window().close().unwrap(),
             "preferences" => {
-                event.window().get_window("preferences").unwrap().show();
+                let _ = event.window().get_window("preferences").unwrap().show();
             }
             "open_folder" => {
                 dialog::FileDialogBuilder::default().pick_folder(move |path_buf| match path_buf {
@@ -164,6 +169,9 @@ fn main() {
                     }
                     _ => {}
                 })
+            }
+            "about" => {
+                let _ = event.window().get_window("about").unwrap().show();
             }
             _ => {}
         })

@@ -76,6 +76,16 @@
 				"height": 600,
 				"visible": false,
 				"url": "/preferences"
+			},
+			{
+				"fullscreen": false,
+				"resizable": false,
+				"label": "about",
+				"title": "About",
+				"width": 339,
+				"height": 532,
+				"visible": false,
+				"url": "/about"
 			}
 		]
 	}

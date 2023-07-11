@@ -185,7 +185,10 @@ fn main() {
         .on_menu_event(|event| match event.menu_item_id() {
             "exit" => event.window().close().unwrap(),
             "preferences" => {
-                let _ = event.window().get_window("preferences").unwrap().show();
+                let window = event.window().get_window("preferences").unwrap();
+
+                window.menu_handle().hide().unwrap();
+                window.show().unwrap();
             }
             "open_folder" => {
                 dialog::FileDialogBuilder::default().pick_folder(move |path_buf| match path_buf {
@@ -199,7 +202,10 @@ fn main() {
                 })
             }
             "about" => {
-                let _ = event.window().get_window("about").unwrap().show();
+                let window = event.window().get_window("about").unwrap();
+
+                window.menu_handle().hide().unwrap();
+                window.show().unwrap();
             }
             _ => {}
         })

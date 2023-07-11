@@ -35,7 +35,7 @@ export function Player() {
 		shuffling: false,
 		tracks: [],
 		library: [],
-		i: 0,
+		i: -1,
 		volume: 1,
 		playing: false,
 		paused: false,
@@ -97,7 +97,8 @@ export function Player() {
 			await invoke('set_presence', {
 				presence: {
 					state: 'Playing',
-					details: `${player.currentTrack.artist} - ${player.currentTrack.title}`
+					details: `${player.currentTrack.artist} - ${player.currentTrack.title}`,
+					largeText: `v${PKG.version}`
 				}
 			});
 		},
@@ -113,7 +114,8 @@ export function Player() {
 			await invoke('set_presence', {
 				presence: {
 					state: 'Playing',
-					details: `${player.currentTrack?.artist} - ${player.currentTrack?.title}`
+					details: `${player.currentTrack?.artist} - ${player.currentTrack?.title}`,
+					largeText: `v${PKG.version}`
 				}
 			});
 		},
@@ -127,7 +129,8 @@ export function Player() {
 			await invoke('set_presence', {
 				presence: {
 					state: 'Paused',
-					details: `${player.currentTrack?.artist} - ${player.currentTrack?.title}`
+					details: `${player.currentTrack?.artist} - ${player.currentTrack?.title}`,
+					largeText: `v${PKG.version}`
 				}
 			});
 		},
@@ -212,7 +215,8 @@ export function Player() {
 			await invoke('set_presence', {
 				presence: {
 					state: 'Browsing',
-					details: `${player.library.reduce((acc, e) => acc + e.tracks.length, 0)} tracks loaded`
+					details: `${player.library.reduce((acc, e) => acc + e.tracks.length, 0)} tracks loaded`,
+					largeText: `v${PKG.version}`
 				}
 			});
 
@@ -244,7 +248,7 @@ export function Player() {
 				shuffling: false,
 				tracks: [],
 				library: [],
-				i: 0,
+				i: -1,
 				volume: player.volume,
 				playing: false,
 				paused: false,

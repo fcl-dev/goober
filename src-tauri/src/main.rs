@@ -33,9 +33,16 @@ impl PlaybackState {
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct Presence {
     state: String,
     details: String,
+    large_text: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct PackageJson {
+    version: String,
 }
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -105,7 +112,11 @@ async fn set_presence(
     discord_ipc_client
         .set_activity(
             Activity::new()
-                .assets(Assets::new().large_image("gooberlogo"))
+                .assets(
+                    Assets::new()
+                        .large_image("goober-icon")
+                        .large_text(&presence.large_text),
+                )
                 .state(&presence.state)
                 .details(&presence.details),
         )
@@ -119,20 +130,34 @@ fn main() {
     let preferences = CustomMenuItem::new("preferences".to_string(), "Preferences");
     let exit = CustomMenuItem::new("exit".to_string(), "Exit");
 
-    let submenu = Submenu::new(
+    let file = Submenu::new(
         "File",
         Menu::new()
             .add_item(open_library_folder)
             .add_item(preferences)
             .add_item(exit),
     );
-    let menu = Menu::new().add_submenu(submenu);
+
+    let about = CustomMenuItem::new("about".to_string(), "About");
+
+    let help = Submenu::new("Help", Menu::new().add_item(about));
+
+    let menu = Menu::new().add_submenu(file).add_submenu(help);
 
     let stream = OutputStream::try_default().unwrap();
 
     tauri::Builder::default()
         .menu(menu)
         .setup(|app| {
+            let package_json_path = app
+                .path_resolver()
+                .resolve_resource("../package.json")
+                .expect("failed to resolve resource");
+
+            let file = std::fs::File::open(&package_json_path).unwrap();
+
+            let package_json: PackageJson = serde_json::from_reader(file).unwrap();
+
             let discord_ipc_client = DeclarativeDiscordIpcClient::new("1117401973247975506");
 
             discord_ipc_client.enable();
@@ -140,7 +165,11 @@ fn main() {
                 .set_activity(
                     Activity::new()
                         .state("Browsing")
-                        .assets(Assets::new().large_image("gooberlogo"))
+                        .assets(
+                            Assets::new()
+                                .large_image("goober-icon")
+                                .large_text(&format!("v{}", &package_json.version)),
+                        )
                         .details("Just launched"),
                 )
                 .unwrap();
@@ -152,7 +181,7 @@ fn main() {
         .on_menu_event(|event| match event.menu_item_id() {
             "exit" => event.window().close().unwrap(),
             "preferences" => {
-                event.window().get_window("preferences").unwrap().show();
+                let _ = event.window().get_window("preferences").unwrap().show();
             }
             "open_folder" => {
                 dialog::FileDialogBuilder::default().pick_folder(move |path_buf| match path_buf {
@@ -164,6 +193,9 @@ fn main() {
                     }
                     _ => {}
                 })
+            }
+            "about" => {
+                let _ = event.window().get_window("about").unwrap().show();
             }
             _ => {}
         })

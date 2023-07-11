@@ -49,7 +49,8 @@
 				"icons/icon.ico"
 			],
 			"identifier": "dev.fcl.goober",
-			"targets": "all"
+			"targets": "all",
+			"resources": ["../package.json"]
 		},
 		"security": {
 			"csp": null
@@ -76,6 +77,16 @@
 				"height": 600,
 				"visible": false,
 				"url": "/preferences"
+			},
+			{
+				"fullscreen": false,
+				"resizable": false,
+				"label": "about",
+				"title": "About",
+				"width": 339,
+				"height": 532,
+				"visible": false,
+				"url": "/about"
 			}
 		]
 	}

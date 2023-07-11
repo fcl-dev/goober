@@ -59,6 +59,8 @@ export function Player() {
 			announce();
 		},
 		async play(track: Goober.Track) {
+			console.log('about to play fucking', track);
+
 			await invoke('play', {
 				path: track.path,
 				volume: player.volume
@@ -141,21 +143,19 @@ export function Player() {
 			player.i--;
 			player.currentTrack = player.tracks[player.i];
 
-			player.element?.classList.remove('text-blue-400');
-
 			const elements = [
 				...(<HTMLCollectionOf<HTMLElement>>document.getElementsByClassName('track'))
 			];
-
-			const previousElement = elements[player.i];
-
-			player.element = previousElement;
 
 			if (!player.currentTrack) {
 				player.i = player.tracks.length - 1;
 				player.currentTrack = player.tracks[player.i];
 
-				player.element = elements[player.i];
+				methods.updateElement(elements[player.i]);
+			} else {
+				const previousElement = elements[player.i];
+
+				methods.updateElement(previousElement);
 			}
 
 			methods.play(player.currentTrack);
@@ -169,21 +169,19 @@ export function Player() {
 				player.i++;
 				player.currentTrack = player.tracks[player.i];
 
-				player.element?.classList.remove('text-blue-400');
-
 				const elements = [
 					...(<HTMLCollectionOf<HTMLElement>>document.getElementsByClassName('track'))
 				];
 
 				const nextElement = elements[player.i];
 
-				player.element = nextElement;
+				methods.updateElement(nextElement);
 
 				if (!player.currentTrack) {
 					player.i = 0;
 					player.currentTrack = player.tracks[player.i];
 
-					player.element = elements[player.i];
+					methods.updateElement(elements[player.i]);
 				}
 
 				methods.play(player.currentTrack);
@@ -196,14 +194,12 @@ export function Player() {
 			player.i = Math.floor(Math.random() * player.tracks.length);
 			player.currentTrack = player.tracks[player.i];
 
-			player.element?.classList.remove('text-blue-400');
-
 			const elements = [
 				...(<HTMLCollectionOf<HTMLElement>>document.getElementsByClassName('track'))
 			];
 
 			const nextElement = elements[player.i];
-			player.element = nextElement;
+			methods.updateElement(nextElement);
 
 			methods.play(player.currentTrack);
 			announce();

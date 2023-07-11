@@ -135,7 +135,8 @@
 			presence: {
 				state: 'Browsing',
 				details: `${library.reduce((acc, e) => acc + e.tracks.length, 0)} tracks loaded`,
-				largeText: `v${PKG.version}`
+				largeText: `v${PKG.version}`,
+				smallImage: 'browsing'
 			}
 		});
 	});
@@ -296,7 +297,8 @@
 			presence: {
 				state: 'Browsing',
 				details: `${library.reduce((acc, e) => acc + e.tracks.length, 0)} tracks loaded`,
-				largeText: `v${PKG.version}`
+				largeText: `v${PKG.version}`,
+				smallImage: 'browsing'
 			}
 		});
 	});

@@ -98,7 +98,8 @@ export function Player() {
 				presence: {
 					state: 'Playing',
 					details: `${player.currentTrack.artist} - ${player.currentTrack.title}`,
-					largeText: `v${PKG.version}`
+					largeText: `v${PKG.version}`,
+					smallImage: 'playing'
 				}
 			});
 		},
@@ -115,7 +116,8 @@ export function Player() {
 				presence: {
 					state: 'Playing',
 					details: `${player.currentTrack?.artist} - ${player.currentTrack?.title}`,
-					largeText: `v${PKG.version}`
+					largeText: `v${PKG.version}`,
+					smallImage: 'playing'
 				}
 			});
 		},
@@ -130,7 +132,8 @@ export function Player() {
 				presence: {
 					state: 'Paused',
 					details: `${player.currentTrack?.artist} - ${player.currentTrack?.title}`,
-					largeText: `v${PKG.version}`
+					largeText: `v${PKG.version}`,
+					smallImage: 'paused'
 				}
 			});
 		},
@@ -216,7 +219,8 @@ export function Player() {
 				presence: {
 					state: 'Browsing',
 					details: `${player.library.reduce((acc, e) => acc + e.tracks.length, 0)} tracks loaded`,
-					largeText: `v${PKG.version}`
+					largeText: `v${PKG.version}`,
+					smallImage: 'browsing'
 				}
 			});
 

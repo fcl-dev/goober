@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 use tauri::State;
 use tauri::{api::dialog, CustomMenuItem, Manager, Menu, Submenu};
 
+use inflector::Inflector;
 use rodio::{Decoder, OutputStream, OutputStreamHandle, Sink};
 use std::fs::File;
 use std::io::BufReader;
@@ -38,6 +39,7 @@ struct Presence {
     state: String,
     details: String,
     large_text: String,
+    small_image: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -115,7 +117,9 @@ async fn set_presence(
                 .assets(
                     Assets::new()
                         .large_image("goober-icon")
-                        .large_text(&presence.large_text),
+                        .large_text(&presence.large_text)
+                        .small_image(&presence.small_image)
+                        .small_text(&presence.small_image.to_sentence_case()),
                 )
                 .state(&presence.state)
                 .details(&presence.details),

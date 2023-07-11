@@ -134,7 +134,8 @@
 		await invoke('set_presence', {
 			presence: {
 				state: 'Browsing',
-				details: `${library.reduce((acc, e) => acc + e.tracks.length, 0)} tracks loaded`
+				details: `${library.reduce((acc, e) => acc + e.tracks.length, 0)} tracks loaded`,
+				largeText: `v${PKG.version}`
 			}
 		});
 	});
@@ -294,7 +295,8 @@
 		await invoke('set_presence', {
 			presence: {
 				state: 'Browsing',
-				details: `${library.reduce((acc, e) => acc + e.tracks.length, 0)} tracks loaded`
+				details: `${library.reduce((acc, e) => acc + e.tracks.length, 0)} tracks loaded`,
+				largeText: `v${PKG.version}`
 			}
 		});
 	});

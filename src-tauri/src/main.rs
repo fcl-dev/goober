@@ -33,9 +33,16 @@ impl PlaybackState {
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct Presence {
     state: String,
     details: String,
+    large_text: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct PackageJson {
+    version: String,
 }
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -105,7 +112,11 @@ async fn set_presence(
     discord_ipc_client
         .set_activity(
             Activity::new()
-                .assets(Assets::new().large_image("goober-icon"))
+                .assets(
+                    Assets::new()
+                        .large_image("goober-icon")
+                        .large_text(&presence.large_text),
+                )
                 .state(&presence.state)
                 .details(&presence.details),
         )
@@ -138,6 +149,15 @@ fn main() {
     tauri::Builder::default()
         .menu(menu)
         .setup(|app| {
+            let package_json_path = app
+                .path_resolver()
+                .resolve_resource("../package.json")
+                .expect("failed to resolve resource");
+
+            let file = std::fs::File::open(&package_json_path).unwrap();
+
+            let package_json: PackageJson = serde_json::from_reader(file).unwrap();
+
             let discord_ipc_client = DeclarativeDiscordIpcClient::new("1117401973247975506");
 
             discord_ipc_client.enable();
@@ -145,7 +165,11 @@ fn main() {
                 .set_activity(
                     Activity::new()
                         .state("Browsing")
-                        .assets(Assets::new().large_image("goober-icon"))
+                        .assets(
+                            Assets::new()
+                                .large_image("goober-icon")
+                                .large_text(&format!("v{}", &package_json.version)),
+                        )
                         .details("Just launched"),
                 )
                 .unwrap();

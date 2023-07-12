@@ -25,8 +25,6 @@
 			(targetHTML.children.length > 0 ? targetHTML : targetHTML.parentElement)
 		);
 
-		player.tryClearInterval();
-
 		player.updateElement(target);
 
 		// ({"x": "y"}) === ({"x": "y"}) // false
@@ -35,9 +33,7 @@
 		let i = allTracks.findIndex((t) => JSON.stringify(t) === JSON.stringify(track));
 
 		$player.i = i;
-		$player.element = target;
 
-		// TODO: maybe find a better way to do this?
 		// this ensures that every single time you play the track
 		// goober sets player.tracks, because it's possible that
 		// player.default was called (on stop) and it reset the tracks.

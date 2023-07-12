@@ -29,6 +29,7 @@ directories = "5.0.1"
 sanitize-filename = "0.4.0"
 lofty = "0.13.0"
 declarative-discord-rich-presence = { git = "https://github.com/KPidS/declarative-discord-rich-presence" }
+Inflector = "0.11.4"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.

@@ -11,6 +11,7 @@
 	import EmptyPlaylistModal from './EmptyPlaylistModal.svelte';
 	import { register } from '@tauri-apps/api/globalShortcut';
 	import { appWindow } from '@tauri-apps/api/window';
+	import FaPlay from 'svelte-icons/fa/FaPlay.svelte';
 
 	/**
 	 * All tracks in the current `Playlist`
@@ -135,7 +136,8 @@
 			presence: {
 				state: 'Browsing',
 				details: `${library.reduce((acc, e) => acc + e.tracks.length, 0)} tracks loaded`,
-				largeText: `v${PKG.version}`
+				largeText: `v${PKG.version}`,
+				smallImage: 'browsing'
 			}
 		});
 	});
@@ -296,10 +298,21 @@
 			presence: {
 				state: 'Browsing',
 				details: `${library.reduce((acc, e) => acc + e.tracks.length, 0)} tracks loaded`,
-				largeText: `v${PKG.version}`
+				largeText: `v${PKG.version}`,
+				smallImage: 'browsing'
 			}
 		});
 	});
+
+	function play() {
+		const elements = [...(<HTMLCollectionOf<HTMLElement>>document.getElementsByClassName('track'))];
+		player.updateElement(elements[0]);
+
+		player.play(tracks[0]);
+
+		$player.i = 0;
+		$player.tracks = tracks;
+	}
 
 	$: {
 		elapsed = toTime($player.elapsed);
@@ -388,6 +401,12 @@
 						bind:player
 					/>
 				{/if}
+
+				<button class="btn" on:click={play}>
+					<div class="h-3 w-3">
+						<FaPlay />
+					</div>
+				</button>
 			</div>
 
 			<div class="flex flex-col gap-y-1.5">

@@ -59,8 +59,6 @@ export function Player() {
 			announce();
 		},
 		async play(track: Goober.Track) {
-			console.log('about to play fucking', track);
-
 			await invoke('play', {
 				path: track.path,
 				volume: player.volume

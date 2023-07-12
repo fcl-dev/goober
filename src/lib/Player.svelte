@@ -306,7 +306,6 @@
 
 	function play() {
 		const elements = [...(<HTMLCollectionOf<HTMLElement>>document.getElementsByClassName('track'))];
-		console.log(tracks);
 		player.updateElement(elements[0]);
 
 		player.play(tracks[0]);
